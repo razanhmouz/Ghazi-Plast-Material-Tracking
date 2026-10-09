@@ -4,6 +4,7 @@ import { useGetTrace, useUpdateRun, getGetTraceQueryKey } from "@workspace/api-c
 import { OperationsTable } from "@/components/operations-table";
 import { ChecklistDialog } from "@/components/checklist-dialog";
 import { QualityDecisionPanel } from "@/components/quality-decision-panel";
+import { OwnerVerification } from "@/components/owner-verification";
 import { INSP, REL, fmt, Pill, InspPill, invalidateTrace, type Insp, type Rel } from "@/lib/trace-shared";
 import type { Run, Material, RunUpdate } from "@workspace/api-client-react";
 import { Search, ScanBarcode, Download, RefreshCw, AlertTriangle, Pencil, Truck, Warehouse, Factory, Package, X, ShieldAlert } from "lucide-react";
@@ -129,6 +130,10 @@ export default function TracePage() {
         </section>
 
         <WorkflowProgress resultsReady={Boolean(search && !isFetching && !isError && materials.length > 0)} />
+        <div className="flex flex-wrap items-center gap-3">
+          <OwnerVerification />
+          <p className="text-xs text-muted-foreground">Read-only check of P-77 quantities and customer destinations.</p>
+        </div>
 
         {isLoading ? <LoadingState /> : isError ? (
           <div className="rounded-xl border bg-card p-10 text-center">

@@ -19,6 +19,9 @@ router.patch("/runs/:id", async (req, res): Promise<void> => {
   const params = UpdateRunParams.safeParse(req.params);
   const body = UpdateRunBody.safeParse(req.body);
   if (!params.success || !body.success) { res.status(400).json({error: "Invalid batch update"}); return; }
+  if (body.data.checklist?.some(entry => !entry.label.trim())) {
+    res.status(400).json({error: "Each checklist entry needs a non-empty label."}); return;
+  }
   if (body.data.releaseDecision === "released" && body.data.inspectionResult !== "passed") {
     res.status(400).json({error: "A passed inspection is required before release."}); return;
   }

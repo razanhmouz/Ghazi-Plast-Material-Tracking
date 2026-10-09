@@ -15,6 +15,16 @@ export const productionRuns = pgTable("production_runs", {
   inspectionResult: text("inspection_result").notNull().default("pending"),
   releaseDecision: text("release_decision").notNull().default("pending"),
   qualityNotes: text("quality_notes").notNull().default(""),
+  checklist: jsonb("checklist").$type<{label: string; result: "pending" | "passed" | "failed"; notes: string}[]>().notNull().default([]),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   destinations: jsonb("destinations").$type<{name: string; quantity: number; type: "shipped" | "inventory"}[]>().notNull(),
+});
+
+export const qualityActions = pgTable("quality_actions", {
+  requestId: text("request_id").primaryKey(),
+  action: text("action").notNull(),
+  batchIds: jsonb("batch_ids").$type<string[]>().notNull(),
+  rationale: text("rationale").notNull(),
+  quantity: integer("quantity").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -5,10 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ChecklistEntry } from './checklistEntry';
 import type { RunUpdateInspectionResult } from './runUpdateInspectionResult';
 import type { RunUpdateReleaseDecision } from './runUpdateReleaseDecision';
 
 export interface RunUpdate {
+  /** @maxItems 100 */
+  checklist?: ChecklistEntry[];
   /** @maxLength 100 */
   inkLot: string;
   inspectionResult: RunUpdateInspectionResult;

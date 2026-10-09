@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ChecklistEntry } from './checklistEntry';
 import type { Destination } from './destination';
 import type { RunInspectionResult } from './runInspectionResult';
 import type { RunReleaseDecision } from './runReleaseDecision';
@@ -14,6 +15,7 @@ export interface Run {
   materialId: string;
   quantity: number;
   inkLot: string;
+  checklist: ChecklistEntry[];
   inspectionResult: RunInspectionResult;
   releaseDecision: RunReleaseDecision;
   qualityNotes: string;

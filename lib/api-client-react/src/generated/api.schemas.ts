@@ -5,6 +5,70 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ChecklistEntryResult = typeof ChecklistEntryResult[keyof typeof ChecklistEntryResult];
+
+
+export const ChecklistEntryResult = {
+  pending: 'pending',
+  passed: 'passed',
+  failed: 'failed',
+} as const;
+
+export interface ChecklistEntry {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  label: string;
+  result: ChecklistEntryResult;
+  /** @maxLength 2000 */
+  notes: string;
+}
+
+export type QualityActionInputAction = typeof QualityActionInputAction[keyof typeof QualityActionInputAction];
+
+
+export const QualityActionInputAction = {
+  recall: 'recall',
+  release: 'release',
+} as const;
+
+export interface QualityActionInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  requestId: string;
+  action: QualityActionInputAction;
+  /**
+     * @minItems 1
+     * @maxItems 100
+     */
+  batchIds: string[];
+  /**
+     * @minLength 1
+     * @maxLength 5000
+     */
+  rationale: string;
+}
+
+export type QualityActionAction = typeof QualityActionAction[keyof typeof QualityActionAction];
+
+
+export const QualityActionAction = {
+  recall: 'recall',
+  release: 'release',
+} as const;
+
+export interface QualityAction {
+  requestId: string;
+  action: QualityActionAction;
+  batchIds: string[];
+  rationale: string;
+  createdAt: string;
+  quantity: number;
+}
+
 export interface Material {
   id: string;
   supplier: string;
@@ -50,6 +114,7 @@ export interface Run {
   materialId: string;
   quantity: number;
   inkLot: string;
+  checklist: ChecklistEntry[];
   inspectionResult: RunInspectionResult;
   releaseDecision: RunReleaseDecision;
   qualityNotes: string;
@@ -82,6 +147,8 @@ export const RunUpdateReleaseDecision = {
 } as const;
 
 export interface RunUpdate {
+  /** @maxItems 100 */
+  checklist?: ChecklistEntry[];
   /** @maxLength 100 */
   inkLot: string;
   inspectionResult: RunUpdateInspectionResult;

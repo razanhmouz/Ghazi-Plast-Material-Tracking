@@ -8,9 +8,51 @@
 import * as zod from 'zod';
 
 
+export const ListQualityActionsResponseItem = zod.object({
+  "requestId": zod.string(),
+  "action": zod.enum(['recall', 'release']),
+  "batchIds": zod.array(zod.string()),
+  "rationale": zod.string(),
+  "createdAt": zod.string(),
+  "quantity": zod.number().int()
+})
+export const ListQualityActionsResponse = zod.array(ListQualityActionsResponseItem)
+
+
+export const recordQualityActionBodyRequestIdMax = 100;
+
+export const recordQualityActionBodyBatchIdsMax = 100;
+
+export const recordQualityActionBodyRationaleMax = 5000;
+
+
+
+export const RecordQualityActionBody = zod.object({
+  "requestId": zod.string().min(1).max(recordQualityActionBodyRequestIdMax),
+  "action": zod.enum(['recall', 'release']),
+  "batchIds": zod.array(zod.string()).min(1).max(recordQualityActionBodyBatchIdsMax),
+  "rationale": zod.string().min(1).max(recordQualityActionBodyRationaleMax)
+})
+
+export const RecordQualityActionResponse = zod.object({
+  "requestId": zod.string(),
+  "action": zod.enum(['recall', 'release']),
+  "batchIds": zod.array(zod.string()),
+  "rationale": zod.string(),
+  "createdAt": zod.string(),
+  "quantity": zod.number().int()
+})
+
+
 export const GetTraceQueryParams = zod.object({
   "search": zod.coerce.string().optional()
 })
+
+export const getTraceResponseRunsItemChecklistItemLabelMax = 200;
+
+export const getTraceResponseRunsItemChecklistItemNotesMax = 2000;
+
+
 
 export const GetTraceResponse = zod.object({
   "materials": zod.array(zod.object({
@@ -24,6 +66,11 @@ export const GetTraceResponse = zod.object({
   "materialId": zod.string(),
   "quantity": zod.number().int(),
   "inkLot": zod.string(),
+  "checklist": zod.array(zod.object({
+  "label": zod.string().min(1).max(getTraceResponseRunsItemChecklistItemLabelMax),
+  "result": zod.enum(['pending', 'passed', 'failed']),
+  "notes": zod.string().max(getTraceResponseRunsItemChecklistItemNotesMax)
+})),
   "inspectionResult": zod.enum(['pending', 'passed', 'failed']),
   "releaseDecision": zod.enum(['pending', 'released', 'hold', 'rejected']),
   "qualityNotes": zod.string(),
@@ -41,6 +88,12 @@ export const UpdateRunParams = zod.object({
   "id": zod.coerce.string()
 })
 
+export const updateRunBodyChecklistItemLabelMax = 200;
+
+export const updateRunBodyChecklistItemNotesMax = 2000;
+
+export const updateRunBodyChecklistMax = 100;
+
 export const updateRunBodyInkLotMax = 100;
 
 export const updateRunBodyQualityNotesMax = 5000;
@@ -48,17 +101,33 @@ export const updateRunBodyQualityNotesMax = 5000;
 
 
 export const UpdateRunBody = zod.object({
+  "checklist": zod.array(zod.object({
+  "label": zod.string().min(1).max(updateRunBodyChecklistItemLabelMax),
+  "result": zod.enum(['pending', 'passed', 'failed']),
+  "notes": zod.string().max(updateRunBodyChecklistItemNotesMax)
+})).max(updateRunBodyChecklistMax).optional(),
   "inkLot": zod.string().max(updateRunBodyInkLotMax),
   "inspectionResult": zod.enum(['pending', 'passed', 'failed']),
   "releaseDecision": zod.enum(['pending', 'released', 'hold', 'rejected']),
   "qualityNotes": zod.string().max(updateRunBodyQualityNotesMax)
 })
 
+export const updateRunResponseChecklistItemLabelMax = 200;
+
+export const updateRunResponseChecklistItemNotesMax = 2000;
+
+
+
 export const UpdateRunResponse = zod.object({
   "id": zod.string(),
   "materialId": zod.string(),
   "quantity": zod.number().int(),
   "inkLot": zod.string(),
+  "checklist": zod.array(zod.object({
+  "label": zod.string().min(1).max(updateRunResponseChecklistItemLabelMax),
+  "result": zod.enum(['pending', 'passed', 'failed']),
+  "notes": zod.string().max(updateRunResponseChecklistItemNotesMax)
+})),
   "inspectionResult": zod.enum(['pending', 'passed', 'failed']),
   "releaseDecision": zod.enum(['pending', 'released', 'hold', 'rejected']),
   "qualityNotes": zod.string(),

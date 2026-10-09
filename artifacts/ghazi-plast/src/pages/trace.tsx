@@ -1,8 +1,12 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetTrace, useUpdateRun, getGetTraceQueryKey } from "@workspace/api-client-react";
+import { OperationsTable } from "@/components/operations-table";
+import { ChecklistDialog } from "@/components/checklist-dialog";
+import { QualityDecisionPanel } from "@/components/quality-decision-panel";
+import { INSP, REL, fmt, Pill, InspPill, invalidateTrace, type Insp, type Rel } from "@/lib/trace-shared";
 import type { Run, Material, RunUpdate } from "@workspace/api-client-react";
-import { Search, ScanBarcode, Download, RefreshCw, AlertTriangle, Pencil, Truck, Warehouse, Factory, Package, X, CircleCheck, CircleX, CircleDashed, ShieldAlert } from "lucide-react";
+import { Search, ScanBarcode, Download, RefreshCw, AlertTriangle, Pencil, Truck, Warehouse, Factory, Package, X, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,26 +17,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { WorkflowProgress } from "@/components/workflow-progress";
-
-type Insp = RunUpdate["inspectionResult"];
-type Rel = RunUpdate["releaseDecision"];
-
-const INSP: Record<Insp, { label: string; cls: string; Icon: typeof CircleCheck }> = {
-  pending: { label: "Pending", cls: "bg-muted text-muted-foreground border-border", Icon: CircleDashed },
-  passed: { label: "Passed", cls: "bg-[hsl(158_42%_92%)] text-[hsl(158_50%_24%)] border-[hsl(158_35%_78%)]", Icon: CircleCheck },
-  failed: { label: "Failed", cls: "bg-[hsl(356_60%_94%)] text-destructive border-[hsl(356_45%_82%)]", Icon: CircleX },
-};
-const REL: Record<Rel, { label: string; cls: string; bar: string }> = {
-  pending: { label: "Awaiting decision", cls: "bg-muted text-muted-foreground border-border", bar: "hsl(200 12% 62%)" },
-  released: { label: "Released", cls: "bg-[hsl(158_42%_92%)] text-[hsl(158_50%_24%)] border-[hsl(158_35%_78%)]", bar: "hsl(158 42% 36%)" },
-  hold: { label: "On hold", cls: "bg-[hsl(36_95%_90%)] text-[hsl(28_80%_30%)] border-[hsl(34_80%_72%)]", bar: "hsl(32 92% 52%)" },
-  rejected: { label: "Rejected", cls: "bg-[hsl(356_60%_94%)] text-destructive border-[hsl(356_45%_82%)]", bar: "hsl(356 62% 42%)" },
-};
-const fmt = (n: number) => n.toLocaleString("en-US");
-
-function Pill({ cls, children, testId }: { cls: string; children: React.ReactNode; testId?: string }) {
-  return <span data-testid={testId} className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap", cls)}>{children}</span>;
-}
 
 function exportCsv(runs: Run[], materials: Material[]) {
   const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
@@ -60,7 +44,8 @@ export default function TracePage() {
   const [focusRun, setFocusRun] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const params = search ? { search } : undefined;
-  const { data, isLoading, isError, refetch, isFetching } = useGetTrace(params);
+  const [checklistRun, setChecklistRun] = useState<Run | null>(null);
+  const { data, isLoading, isError, refetch, isFetching } = useGetTrace(params, { query: { queryKey: getGetTraceQueryKey(params), refetchInterval: 30000, refetchOnWindowFocus: true } });
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -180,9 +165,9 @@ export default function TracePage() {
 
             <section className="grid grid-cols-2 md:grid-cols-5 gap-px rounded-xl overflow-hidden border bg-border rise">
               {[
-                { l: "Cups affected", v: fmt(totals.cups), id: "cups" },
-                { l: "Shipped out", v: fmt(totals.shipped), sub: `${totals.customers} customers`, id: "shipped" },
-                { l: "In warehouse", v: fmt(totals.inventory), id: "inventory" },
+                { l: "Affected Production", v: fmt(totals.cups), sub: `cups (${runs.map((r) => fmt(r.quantity)).join(" + ")})`, id: "cups" },
+                { l: "Shipped Quantities", v: fmt(totals.shipped), sub: `cups across ${totals.customers} customer${totals.customers === 1 ? "" : "s"}`, id: "shipped" },
+                { l: "Remaining Inventory", v: fmt(totals.inventory), sub: "cups in warehouse", id: "inventory" },
                 { l: "On hold / rejected", v: fmt(totals.byRel.hold + totals.byRel.rejected), id: "held" },
                 { l: "Runs open", v: `${totals.open}/${runs.length}`, sub: "need decision", id: "open" },
               ].map((s) => (
@@ -194,9 +179,10 @@ export default function TracePage() {
               ))}
             </section>
 
-            <Tabs defaultValue="flow" className="rise">
+            <Tabs defaultValue="ops" className="rise">
               <div className="flex flex-wrap items-center gap-2 justify-between">
-                <TabsList className="bg-secondary">
+                <TabsList className="bg-secondary grid grid-cols-2 h-auto w-full sm:flex sm:w-auto">
+                  <TabsTrigger value="ops" data-testid="tab-operations">Operations table</TabsTrigger>
                   <TabsTrigger value="flow" data-testid="tab-flow">Trace flow</TabsTrigger>
                   <TabsTrigger value="runs" data-testid="tab-runs">Production runs</TabsTrigger>
                   <TabsTrigger value="dist" data-testid="tab-distribution">Distribution</TabsTrigger>
@@ -211,6 +197,9 @@ export default function TracePage() {
                 </div>
               </div>
 
+              <TabsContent value="ops" className="mt-4">
+                <OperationsTable runs={runs} onChecklist={setChecklistRun} onEdit={setEditing} />
+              </TabsContent>
               <TabsContent value="flow" className="mt-4">
                 <FlowView materials={materials} runs={runs} focus={focusRun} setFocus={setFocusRun} onEdit={setEditing} />
               </TabsContent>
@@ -221,10 +210,12 @@ export default function TracePage() {
                 <DistView runs={runs} />
               </TabsContent>
             </Tabs>
+            <QualityDecisionPanel runs={runs} />
           </>
         )}
       </main>
       <EditDialog run={editing} onClose={() => setEditing(null)} />
+      <ChecklistDialog run={checklistRun} onClose={() => setChecklistRun(null)} />
     </div>
   );
 }
@@ -310,11 +301,6 @@ function FlowView({ materials, runs, focus, setFocus, onEdit }: { materials: Mat
   );
 }
 
-function InspPill({ v }: { v: Insp }) {
-  const c = INSP[v];
-  return <Pill cls={c.cls}><c.Icon className="h-3 w-3" />{c.label}</Pill>;
-}
-
 function RunsView({ runs, onEdit }: { runs: Run[]; onEdit: (r: Run) => void }) {
   if (runs.length === 0) return <div className="rounded-xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground">No runs used this material.</div>;
   return (
@@ -384,12 +370,12 @@ function EditDialog({ run, onClose }: { run: Run | null; onClose: () => void }) 
   useEffect(() => {
     if (run) setForm({ inkLot: run.inkLot, inspectionResult: run.inspectionResult, releaseDecision: run.releaseDecision, qualityNotes: run.qualityNotes });
   }, [run]);
-  const warn = form.releaseDecision === "released" && form.inspectionResult !== "passed";
+  const blocked = form.releaseDecision === "released" && form.inspectionResult !== "passed";
   const save = () => {
-    if (!run) return;
+    if (!run || blocked) return;
     update.mutate({ id: run.id, data: { ...form, inkLot: form.inkLot.trim() } }, {
       onSuccess: (r) => {
-        qc.invalidateQueries({ queryKey: getGetTraceQueryKey() });
+        invalidateTrace(qc);
         toast({ title: `${r.id} saved`, description: `${INSP[r.inspectionResult].label} · ${REL[r.releaseDecision].label}` });
         onClose();
       },
@@ -410,7 +396,7 @@ function EditDialog({ run, onClose }: { run: Run | null; onClose: () => void }) 
           </div>
           <Segment label="Inspection result" value={form.inspectionResult} options={(Object.keys(INSP) as Insp[]).map((k) => ({ v: k, l: INSP[k].label }))} onChange={(v) => setForm({ ...form, inspectionResult: v as Insp })} testId="insp" />
           <Segment label="Release decision" value={form.releaseDecision} options={(Object.keys(REL) as Rel[]).map((k) => ({ v: k, l: k === "pending" ? "Pending" : REL[k].label }))} onChange={(v) => setForm({ ...form, releaseDecision: v as Rel })} testId="release" />
-          {warn && <p className="text-xs rounded-md bg-[hsl(38_90%_94%)] border border-[hsl(34_80%_72%)] text-[hsl(28_70%_28%)] p-2 flex gap-1.5"><AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-px" />Releasing a batch that has not passed inspection. Document the justification below.</p>}
+          {blocked && <p data-testid="text-release-blocked-edit" className="text-xs rounded-md bg-[hsl(356_60%_95%)] border border-[hsl(356_45%_82%)] text-destructive p-2 flex gap-1.5"><AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-px" />A batch can only be released after its inspection has passed. A justification cannot override a pending or failed inspection. Record the checks in the QC Inspection Checklist first.</p>}
           <div>
             <Label htmlFor="notes">Quality notes</Label>
             <Textarea id="notes" data-testid="input-notes" maxLength={5000} rows={4} className="mt-1.5" placeholder="Findings, sample sizes, customer contact…" value={form.qualityNotes} onChange={(e) => setForm({ ...form, qualityNotes: e.target.value })} />
@@ -419,7 +405,7 @@ function EditDialog({ run, onClose }: { run: Run | null; onClose: () => void }) 
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} data-testid="button-cancel">Cancel</Button>
-          <Button onClick={save} disabled={update.isPending} data-testid="button-save">{update.isPending ? "Saving…" : "Save record"}</Button>
+          <Button onClick={save} disabled={update.isPending || blocked} data-testid="button-save">{update.isPending ? "Saving…" : "Save record"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

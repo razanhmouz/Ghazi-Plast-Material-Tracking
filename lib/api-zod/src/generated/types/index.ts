@@ -6,11 +6,17 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './checklistEntry';
+export * from './checklistEntryResult';
 export * from './destination';
 export * from './destinationType';
 export * from './getTraceParams';
 export * from './healthStatus';
 export * from './material';
+export * from './qualityAction';
+export * from './qualityActionAction';
+export * from './qualityActionInput';
+export * from './qualityActionInputAction';
 export * from './run';
 export * from './runInspectionResult';
 export * from './runReleaseDecision';

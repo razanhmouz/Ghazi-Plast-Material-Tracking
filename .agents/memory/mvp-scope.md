@@ -19,3 +19,9 @@ Staff workflow: Production receives P-77 records and supplier documentation and 
 **Why:** The user explicitly requires tracing to leave actual shipment statuses unchanged.
 
 **How to apply:** Treat search and trace as read-only operations, and do not imply the workflow guide verifies document receipt.
+
+Quality Manager final actions are recorded internal instructions only, not automated customer notifications, recall execution, or physical shipment releases.
+
+**Why:** The user explicitly requires human-in-the-loop decision support and no automatic notification or recall.
+
+**How to apply:** Keep a confirmed decision history separate from shipment status and quantities. Shared-demo manager labeling is not verified identity or access control.

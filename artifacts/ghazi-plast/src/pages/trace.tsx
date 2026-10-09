@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { WorkflowProgress } from "@/components/workflow-progress";
 
 type Insp = RunUpdate["inspectionResult"];
 type Rel = RunUpdate["releaseDecision"];
@@ -141,6 +142,8 @@ export default function TracePage() {
             </div>
           </form>
         </section>
+
+        <WorkflowProgress resultsReady={Boolean(search && !isFetching && !isError && materials.length > 0)} />
 
         {isLoading ? <LoadingState /> : isError ? (
           <div className="rounded-xl border bg-card p-10 text-center">

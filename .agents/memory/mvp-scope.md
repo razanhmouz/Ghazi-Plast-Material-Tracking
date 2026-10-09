@@ -13,3 +13,9 @@ For this MVP, a batch release requires a passed inspection; the supplier alert r
 **Why:** A local batch decision must not silently resolve a supplier-wide alert.
 
 **How to apply:** Keep supplier alert status separate from batch quality editing.
+
+Staff workflow: Production receives P-77 records and supplier documentation and links both cup runs; quality checks and release decisions are recorded, and Shipping links customer quantities; the user searches P-77; tracking displays affected batches, outbound deliveries, and remaining inventory.
+
+**Why:** The user explicitly requires tracing to leave actual shipment statuses unchanged.
+
+**How to apply:** Treat search and trace as read-only operations, and do not imply the workflow guide verifies document receipt.

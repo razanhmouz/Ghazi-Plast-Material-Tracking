@@ -1,0 +1,1 @@
+- [MVP scope](mvp-scope.md) — Ghazi Plast tracks supplier-alert impact; unspecified lot and quality values must remain explicitly demo or pending.

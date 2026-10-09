@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Ghazi Plast"
+description = "Material lot traceability and batch quality dashboard for Ghazi Plast."
+version = "1.0.0"
+id = "artifacts/ghazi-plast"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22885
+
+[services.development]
+run = "pnpm --filter @workspace/ghazi-plast run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ghazi-plast", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ghazi-plast/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22885"
+BASE_PATH = "/"

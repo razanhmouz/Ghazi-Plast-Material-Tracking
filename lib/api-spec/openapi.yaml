@@ -11,6 +11,41 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /trace:
+    get:
+      operationId: getTrace
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+      responses:
+        "200":
+          description: Material trace with production and distribution
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trace"
+  /runs/{id}:
+    patch:
+      operationId: updateRun
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunUpdate"
+      responses:
+        "200":
+          description: Updated run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Run"
   /healthz:
     get:
       operationId: healthCheck
@@ -26,6 +61,54 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    Trace:
+      type: object
+      required: [materials, runs]
+      properties:
+        materials:
+          type: array
+          items: { $ref: "#/components/schemas/Material" }
+        runs:
+          type: array
+          items: { $ref: "#/components/schemas/Run" }
+    Material:
+      type: object
+      required: [id, supplier, name, alert]
+      properties:
+        id: { type: string }
+        supplier: { type: string }
+        name: { type: string }
+        alert: { type: string }
+    Run:
+      type: object
+      required: [id, materialId, quantity, inkLot, inspectionResult, releaseDecision, qualityNotes, updatedAt, destinations]
+      properties:
+        id: { type: string }
+        materialId: { type: string }
+        quantity: { type: integer }
+        inkLot: { type: string }
+        inspectionResult: { type: string, enum: [pending, passed, failed] }
+        releaseDecision: { type: string, enum: [pending, released, hold, rejected] }
+        qualityNotes: { type: string }
+        updatedAt: { type: string }
+        destinations:
+          type: array
+          items: { $ref: "#/components/schemas/Destination" }
+    Destination:
+      type: object
+      required: [name, quantity, type]
+      properties:
+        name: { type: string }
+        quantity: { type: integer }
+        type: { type: string, enum: [shipped, inventory] }
+    RunUpdate:
+      type: object
+      required: [inkLot, inspectionResult, releaseDecision, qualityNotes]
+      properties:
+        inkLot: { type: string, maxLength: 100 }
+        inspectionResult: { type: string, enum: [pending, passed, failed] }
+        releaseDecision: { type: string, enum: [pending, released, hold, rejected] }
+        qualityNotes: { type: string, maxLength: 5000 }
     HealthStatus:
       type: object
       properties:

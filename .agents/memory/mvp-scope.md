@@ -25,3 +25,9 @@ Quality Manager final actions are recorded internal instructions only, not autom
 **Why:** The user explicitly requires human-in-the-loop decision support and no automatic notification or recall.
 
 **How to apply:** Keep a confirmed decision history separate from shipment status and quantities. Shared-demo manager labeling is not verified identity or access control.
+
+Adding a destination adds its quantity to batch production and shipped/inventory totals; it is not a transfer of existing stock. The new row’s Passed status is explicitly confirmed by staff and does not change batch inspection or release decisions.
+
+**Why:** The user requested newly added destinations to increase Batch Total and KPIs and display Passed; row confirmation avoids silently inventing a batch-wide quality approval.
+
+**How to apply:** Preserve this distinction when extending destination editing, stock transfers, and quality displays.

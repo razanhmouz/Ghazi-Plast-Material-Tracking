@@ -5,9 +5,12 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DestinationInspectionResult } from './destinationInspectionResult';
 import type { DestinationType } from './destinationType';
 
 export interface Destination {
+  id?: string;
+  inspectionResult?: DestinationInspectionResult;
   name: string;
   quantity: number;
   type: DestinationType;

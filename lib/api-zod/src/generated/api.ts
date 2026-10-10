@@ -76,6 +76,8 @@ export const GetTraceResponse = zod.object({
   "qualityNotes": zod.string(),
   "updatedAt": zod.string(),
   "destinations": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "inspectionResult": zod.enum(['pending', 'passed', 'failed']).optional(),
   "name": zod.string(),
   "quantity": zod.number().int(),
   "type": zod.enum(['shipped', 'inventory'])
@@ -133,6 +135,58 @@ export const UpdateRunResponse = zod.object({
   "qualityNotes": zod.string(),
   "updatedAt": zod.string(),
   "destinations": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "inspectionResult": zod.enum(['pending', 'passed', 'failed']).optional(),
+  "name": zod.string(),
+  "quantity": zod.number().int(),
+  "type": zod.enum(['shipped', 'inventory'])
+}))
+})
+
+
+export const AddDestinationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const addDestinationBodyRequestIdMax = 100;
+
+export const addDestinationBodyNameMax = 200;
+
+export const addDestinationBodyQuantityMax = 1000000000;
+
+
+
+export const AddDestinationBody = zod.object({
+  "requestId": zod.string().min(1).max(addDestinationBodyRequestIdMax),
+  "name": zod.string().min(1).max(addDestinationBodyNameMax),
+  "quantity": zod.number().int().min(1).max(addDestinationBodyQuantityMax),
+  "type": zod.enum(['shipped', 'inventory']),
+  "confirmedPassed": zod.literal(true)
+})
+
+export const addDestinationResponseChecklistItemLabelMax = 200;
+
+export const addDestinationResponseChecklistItemNotesMax = 2000;
+
+
+
+export const AddDestinationResponse = zod.object({
+  "id": zod.string(),
+  "materialId": zod.string(),
+  "quantity": zod.number().int(),
+  "inkLot": zod.string(),
+  "checklist": zod.array(zod.object({
+  "label": zod.string().min(1).max(addDestinationResponseChecklistItemLabelMax),
+  "result": zod.enum(['pending', 'passed', 'failed']),
+  "notes": zod.string().max(addDestinationResponseChecklistItemNotesMax)
+})),
+  "inspectionResult": zod.enum(['pending', 'passed', 'failed']),
+  "releaseDecision": zod.enum(['pending', 'released', 'hold', 'rejected']),
+  "qualityNotes": zod.string(),
+  "updatedAt": zod.string(),
+  "destinations": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "inspectionResult": zod.enum(['pending', 'passed', 'failed']).optional(),
   "name": zod.string(),
   "quantity": zod.number().int(),
   "type": zod.enum(['shipped', 'inventory'])

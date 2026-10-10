@@ -5,6 +5,7 @@ import { OperationsTable } from "@/components/operations-table";
 import { ChecklistDialog } from "@/components/checklist-dialog";
 import { QualityDecisionPanel } from "@/components/quality-decision-panel";
 import { OwnerVerification } from "@/components/owner-verification";
+import { AddDestination } from "@/components/add-destination";
 import { INSP, REL, fmt, Pill, InspPill, invalidateTrace, type Insp, type Rel } from "@/lib/trace-shared";
 import type { Run, Material, RunUpdate } from "@workspace/api-client-react";
 import { Search, ScanBarcode, Download, RefreshCw, AlertTriangle, Pencil, Truck, Warehouse, Factory, Package, X, ShieldAlert } from "lucide-react";
@@ -186,13 +187,14 @@ export default function TracePage() {
                     <TabsTrigger value="runs" data-testid="tab-runs" className="text-xs">Production runs</TabsTrigger>
                     <TabsTrigger value="dist" data-testid="tab-distribution" className="text-xs">Distribution</TabsTrigger>
                   </TabsList>
-                  <div className="flex gap-2">
+                  <div className="ml-auto flex flex-wrap gap-2">
                     <Button variant="outline" size="sm" data-testid="button-refresh" onClick={() => refetch()} disabled={isFetching}>
                       <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isFetching && "animate-spin")} />Refresh
                     </Button>
                     <Button size="sm" data-testid="button-export" disabled={runs.length === 0} onClick={() => exportCsv(runs, materials)}>
                       <Download className="h-3.5 w-3.5 mr-1.5" />Export CSV
                     </Button>
+                    <AddDestination runs={runs} />
                   </div>
                 </div>
                 <TabsContent value="ops" className="mt-3">

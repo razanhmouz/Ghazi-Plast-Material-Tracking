@@ -70,6 +70,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Run"
+  /runs/{id}/destinations:
+    post:
+      operationId: addDestination
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DestinationInput" }
+      responses:
+        "200":
+          description: Updated batch with added destination
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Run" }
   /healthz:
     get:
       operationId: healthCheck
@@ -156,9 +175,20 @@ components:
       type: object
       required: [name, quantity, type]
       properties:
+        id: { type: string }
+        inspectionResult: { type: string, enum: [pending, passed, failed] }
         name: { type: string }
         quantity: { type: integer }
         type: { type: string, enum: [shipped, inventory] }
+    DestinationInput:
+      type: object
+      required: [requestId, name, quantity, type, confirmedPassed]
+      properties:
+        requestId: { type: string, minLength: 1, maxLength: 100 }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        quantity: { type: integer, minimum: 1, maximum: 1000000000 }
+        type: { type: string, enum: [shipped, inventory] }
+        confirmedPassed: { type: boolean, enum: [true] }
     RunUpdate:
       type: object
       required: [inkLot, inspectionResult, releaseDecision, qualityNotes]

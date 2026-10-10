@@ -17,7 +17,7 @@ export const productionRuns = pgTable("production_runs", {
   qualityNotes: text("quality_notes").notNull().default(""),
   checklist: jsonb("checklist").$type<{label: string; result: "pending" | "passed" | "failed"; notes: string}[]>().notNull().default([]),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  destinations: jsonb("destinations").$type<{name: string; quantity: number; type: "shipped" | "inventory"}[]>().notNull(),
+  destinations: jsonb("destinations").$type<{id?: string; inspectionResult?: "pending" | "passed" | "failed"; name: string; quantity: number; type: "shipped" | "inventory"}[]>().notNull(),
 });
 
 export const qualityActions = pgTable("quality_actions", {

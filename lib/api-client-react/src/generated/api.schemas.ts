@@ -95,6 +95,15 @@ export const RunReleaseDecision = {
   rejected: 'rejected',
 } as const;
 
+export type DestinationInspectionResult = typeof DestinationInspectionResult[keyof typeof DestinationInspectionResult];
+
+
+export const DestinationInspectionResult = {
+  pending: 'pending',
+  passed: 'passed',
+  failed: 'failed',
+} as const;
+
 export type DestinationType = typeof DestinationType[keyof typeof DestinationType];
 
 
@@ -104,6 +113,8 @@ export const DestinationType = {
 } as const;
 
 export interface Destination {
+  id?: string;
+  inspectionResult?: DestinationInspectionResult;
   name: string;
   quantity: number;
   type: DestinationType;
@@ -125,6 +136,34 @@ export interface Run {
 export interface Trace {
   materials: Material[];
   runs: Run[];
+}
+
+export type DestinationInputType = typeof DestinationInputType[keyof typeof DestinationInputType];
+
+
+export const DestinationInputType = {
+  shipped: 'shipped',
+  inventory: 'inventory',
+} as const;
+
+export interface DestinationInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  requestId: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+  /**
+     * @minimum 1
+     * @maximum 1000000000
+     */
+  quantity: number;
+  type: DestinationInputType;
+  confirmedPassed: true;
 }
 
 export type RunUpdateInspectionResult = typeof RunUpdateInspectionResult[keyof typeof RunUpdateInspectionResult];

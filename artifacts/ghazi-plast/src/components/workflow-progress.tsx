@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const steps = [
   {
     title: "Receive & link records",
@@ -22,14 +24,40 @@ const steps = [
 ];
 
 export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
+  const [paused, setPaused] = useState(false);
   const current = resultsReady ? 4 : 3;
   return (
     <section aria-labelledby="workflow-heading" className="panel overflow-hidden">
       <div className="px-4 py-2.5 border-b flex flex-wrap items-center justify-between gap-2">
-        <h2 id="workflow-heading" className="micro !text-foreground">Material flow</h2>
+        <h2 id="workflow-heading" className="micro !text-foreground">Material flow / Live pipeline</h2>
         <span className="font-mono text-[10px] uppercase tracking-wider text-primary" aria-live="polite">
           Step {current} of 4 · {resultsReady ? "Trace results displayed" : "Ready to trace"}
         </span>
+      </div>
+      <div className="px-4 pt-4 pb-3 border-b">
+        <div className={`pipeline-rail ${paused ? "pipeline-paused" : ""}`} aria-hidden="true">
+          {steps.map((step, index) => (
+            <div key={step.title} className="pipeline-station">
+              <span className={`pipeline-node ${index + 1 === current ? "pipeline-node-active" : ""}`}>
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              {index < steps.length - 1 && (
+                <div className="pipeline-track">
+                  <span className="pipeline-dashes" />
+                  <span className="pipeline-packet" />
+                  <span className="pipeline-packet pipeline-packet-second" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-between gap-3 mt-3">
+          <span className="text-[10px] text-muted-foreground">Animated workflow guide · not live shipment activity</span>
+          <button type="button" aria-pressed={paused} onClick={() => setPaused(!paused)}
+            className="shrink-0 rounded border px-2 py-1 text-[11px] text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+            {paused ? "Resume motion" : "Pause motion"}
+          </button>
+        </div>
       </div>
       <ol className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         {steps.map((step, index) => {

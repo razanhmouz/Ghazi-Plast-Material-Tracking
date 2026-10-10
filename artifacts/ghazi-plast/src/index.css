@@ -442,6 +442,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:50;op
 @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.35}}
 .pulse-dot{animation:pulse-dot 1.6s ease-in-out infinite}
 
+.pipeline-rail{display:flex;align-items:center;padding:8px 0}
+.pipeline-station{display:flex;align-items:center;flex:1;min-width:0}
+.pipeline-station:last-child{flex:0 0 34px}
+.pipeline-node{position:relative;z-index:1;display:grid;place-items:center;width:34px;height:34px;flex-shrink:0;border:1px solid hsl(var(--primary)/.5);border-radius:50%;background:hsl(var(--background));color:hsl(var(--primary));font:11px 'JetBrains Mono',monospace;box-shadow:0 0 16px hsl(var(--primary)/.14)}
+.pipeline-node-active{background:hsl(var(--primary)/.16);border-color:hsl(var(--primary));animation:pipeline-beacon 2.8s ease-in-out infinite}
+.pipeline-track{position:relative;flex:1;height:12px;margin:0 5px;overflow:hidden;border-top:1px solid hsl(var(--primary)/.25);border-bottom:1px solid hsl(var(--primary)/.25);background:hsl(var(--primary)/.06)}
+.pipeline-dashes{position:absolute;inset:4px 0;background:repeating-linear-gradient(90deg,hsl(var(--primary)/.65) 0 8px,transparent 8px 18px);animation:pipeline-drift 1s linear infinite}
+.pipeline-packet{position:absolute;inset:0 auto 0 0;width:100%;background:linear-gradient(90deg,transparent 65%,hsl(var(--primary)/.15) 78%,hsl(var(--primary)) 97%,#d9ffff 100%);animation:pipeline-stream 2.6s linear infinite;filter:drop-shadow(0 0 4px hsl(var(--primary)))}
+.pipeline-packet-second{animation-delay:-1.3s;opacity:.6}
+.pipeline-paused *{animation-play-state:paused!important}
+@keyframes pipeline-drift{to{background-position:18px 0}}
+@keyframes pipeline-stream{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes pipeline-beacon{0%,100%{box-shadow:0 0 0 3px hsl(var(--primary)/.06),0 0 14px hsl(var(--primary)/.18)}50%{box-shadow:0 0 0 7px hsl(var(--primary)/.1),0 0 28px hsl(var(--primary)/.4)}}
+@media(prefers-reduced-motion:reduce){.pipeline-rail *{animation:none!important}.pipeline-packet{display:none}}
+
 :root{color-scheme:dark;--ok:158 64% 58%;--warn:45 96% 58%;--info:188 92% 52%}
 .tone-ok{background:hsl(var(--ok)/.12);color:hsl(var(--ok));border-color:hsl(var(--ok)/.35)}
 .tone-warn{background:hsl(var(--warn)/.12);color:hsl(var(--warn));border-color:hsl(var(--warn)/.38)}

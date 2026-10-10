@@ -67,7 +67,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
       <div className="bg-sidebar text-sidebar-foreground border-b px-4 md:px-5 py-3 flex flex-wrap items-center gap-2">
         <Gavel className="h-4 w-4 text-sidebar-primary" />
         <h2 className="font-semibold tracking-tight">Quality Decision Panel</h2>
-        <span className="font-mono text-[10px] uppercase tracking-wider opacity-70">For the Quality Manager · identity not verified in this shared demo</span>
+        <span className="font-mono text-[10px] uppercase tracking-wider opacity-70">For the Quality Manager ·</span>
       </div>
       <div className="grid lg:grid-cols-[1.15fr_1fr]">
         <div className="p-4 md:p-5 space-y-4 lg:border-r">
@@ -118,7 +118,6 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
         </div>
         <DecisionHistory q={history} />
       </div>
-
       <Dialog open={confirming} onOpenChange={(o) => !record.isPending && setConfirming(o)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

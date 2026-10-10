@@ -165,7 +165,6 @@ export default function TracePage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono font-semibold text-foreground" data-testid="text-material-id">{m.id}</span>
-                      <span className="text-sm text-muted-foreground">· {m.name}</span>
                       <Pill cls="tone-warn">Supplier {m.supplier}</Pill>
                     </div>
                     <p className="text-sm mt-0.5 text-foreground/85" data-testid="text-material-alert">{m.alert}</p>

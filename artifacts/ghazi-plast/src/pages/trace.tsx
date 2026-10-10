@@ -90,7 +90,6 @@ export default function TracePage() {
             </div>
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <span data-testid="status-demo" className="font-mono text-[10px] uppercase tracking-wider rounded border border-accent/50 text-accent px-2 py-1">Demo data · shared workspace, no sign-in</span>
             <OwnerVerification />
           </div>
         </div>

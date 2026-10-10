@@ -13,7 +13,6 @@ const steps = [
   {
     title: "Search & start tracking",
     owner: "User",
-    description: "Search for P-77 to initiate tracking. This is a read-only trace and does not alter any actual shipment status.",
   },
   {
     title: "Review affected output",

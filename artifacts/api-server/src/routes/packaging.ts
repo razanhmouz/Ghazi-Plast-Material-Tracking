@@ -1,13 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
-import { db, packagingBatches } from "@workspace/db";
+import { db, packagingBatches, packagingAllocationHistory } from "@workspace/db";
 import { and, eq, desc, sql } from "drizzle-orm";
 import {
   CreatePackagingBatchBody, UpdatePackagingBatchBody, UpdatePackagingBatchParams,
   ListPackagingBatchesResponse, CreatePackagingBatchResponse, UpdatePackagingBatchResponse,
   SearchPackagingTraceBody, SearchPackagingTraceResponse,
+  ListPackagingAllocationHistoryParams, ListPackagingAllocationHistoryResponse,
 } from "@workspace/api-zod";
 import { ensurePackagingSamples } from "./packaging-seed";
+import { allocationsChanged } from "../lib/allocation-history";
 
 const router: IRouter = Router();
 const serialize = (row: typeof packagingBatches.$inferSelect) => ({
@@ -56,13 +58,33 @@ router.get("/packaging/batches", async (_req, res) => {
   const rows = await db.select().from(packagingBatches).orderBy(desc(packagingBatches.updatedAt));
   res.json(ListPackagingBatchesResponse.parse(rows.map(serialize)));
 });
+router.get("/packaging/batches/:id/allocation-history", async (req, res): Promise<void> => {
+  const params = ListPackagingAllocationHistoryParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid batch ID." }); return; }
+  const [batch] = await db.select({ id: packagingBatches.id }).from(packagingBatches).where(eq(packagingBatches.id, params.data.id));
+  if (!batch) { res.status(404).json({ error: "Material batch not found." }); return; }
+  const rows = await db.select().from(packagingAllocationHistory)
+    .where(eq(packagingAllocationHistory.batchId, params.data.id))
+    .orderBy(desc(packagingAllocationHistory.createdAt), desc(packagingAllocationHistory.id));
+  res.json(ListPackagingAllocationHistoryResponse.parse(rows.map(row => ({
+    ...row, createdAt: row.createdAt.toISOString(),
+  }))));
+});
 router.post("/packaging/batches", async (req, res): Promise<void> => {
   const body = CreatePackagingBatchBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: "Invalid material batch. Check required fields and quantity." }); return; }
   const error = validate(body.data);
   if (error) { res.status(400).json({ error }); return; }
   try {
-    const [row] = await db.insert(packagingBatches).values({ id: randomUUID(), ...normalize(body.data) }).returning();
+    const row = await db.transaction(async tx => {
+      const [created] = await tx.insert(packagingBatches).values({ id: randomUUID(), ...normalize(body.data) }).returning();
+      const after = created.data.allocations ?? [];
+      if (after.length) await tx.insert(packagingAllocationHistory).values({
+        id: randomUUID(), batchId: created.id, lotId: created.lotId,
+        before: [], after, attribution: "shared_demo",
+      });
+      return created;
+    });
     res.status(201).json(CreatePackagingBatchResponse.parse(serialize(row)));
   } catch (error) {
     if (isUniqueViolation(error)) { res.status(409).json({ error: "This lot ID already exists. Use a unique lot ID or edit its existing record." }); return; }
@@ -78,7 +100,12 @@ router.put("/packaging/batches/:id", async (req, res): Promise<void> => {
   try {
     const { expectedUpdatedAt, ...input } = body.data;
     const normalized = normalize(input);
-    const [row] = await db.update(packagingBatches).set({
+    const row = await db.transaction(async tx => {
+      // Lock the state being replaced; the version predicate still rejects stale drafts.
+      const [previous] = await tx.select().from(packagingBatches)
+        .where(eq(packagingBatches.id, params.data.id)).for("update");
+      if (!previous) return undefined;
+      const [updated] = await tx.update(packagingBatches).set({
       lotId: normalized.lotId,
       // JSON merge keeps allocations when older clients omit the new field.
       data: sql`${packagingBatches.data} || ${JSON.stringify(normalized.data)}::jsonb`,
@@ -89,6 +116,15 @@ router.put("/packaging/batches/:id", async (req, res): Promise<void> => {
       eq(packagingBatches.id, params.data.id),
       sql`date_trunc('milliseconds', ${packagingBatches.updatedAt}) = ${expectedUpdatedAt}::timestamptz`,
     )).returning();
+      if (!updated) return undefined;
+      const before = previous.data.allocations ?? [];
+      const after = updated.data.allocations ?? [];
+      if (allocationsChanged(before, after)) await tx.insert(packagingAllocationHistory).values({
+        id: randomUUID(), batchId: updated.id, lotId: updated.lotId,
+        before, after, attribution: "shared_demo", createdAt: updated.updatedAt,
+      });
+      return updated;
+    });
     if (!row) {
       const [current] = await db.select().from(packagingBatches).where(eq(packagingBatches.id, params.data.id));
       if (!current) { res.status(404).json({ error: "Material batch not found." }); return; }

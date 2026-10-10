@@ -31,6 +31,7 @@ import type {
   HealthStatus,
   LogoutMobileSession200,
   MobileTokenExchangeRequest,
+  PackagingAllocationChange,
   PackagingBatch,
   PackagingBatchConflict,
   PackagingBatchInput,
@@ -56,6 +57,7 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
+
 const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
@@ -71,7 +73,86 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+export const getListPackagingAllocationHistoryUrl = (id: string,) => {
+
+
+
+
+  return `/api/packaging/batches/${id}/allocation-history`
+}
+
+/**
+ * @summary Read allocation snapshots, newest first, from the shared demo registry
+ */
+export const listPackagingAllocationHistory = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<PackagingAllocationChange[]> => {
+
+  return customFetch<PackagingAllocationChange[]>(getListPackagingAllocationHistoryUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPackagingAllocationHistoryQueryKey = (id: string,) => {
+    return [
+    `/api/packaging/batches/${id}/allocation-history`
+    ] as const;
+    }
+
+
+export const getListPackagingAllocationHistoryQueryOptions = <TData = Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPackagingAllocationHistoryQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPackagingAllocationHistory>>> = ({ signal }) => listPackagingAllocationHistory(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPackagingAllocationHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof listPackagingAllocationHistory>>>
+export type ListPackagingAllocationHistoryQueryError = ErrorType<void>
+
+
+/**
+ * @summary Read allocation snapshots, newest first, from the shared demo registry
+ */
+
+export function useListPackagingAllocationHistory<TData = Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPackagingAllocationHistoryQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getListEvidenceTeamsUrl = () => {
+
+
 
 
   return `/api/packaging/teams`
@@ -89,6 +170,9 @@ export const listEvidenceTeams = async ( options?: Parameters<typeof customFetch
 );}
 
 
+
+
+
 export const getListEvidenceTeamsQueryKey = () => {
     return [
     `/api/packaging/teams`
@@ -104,7 +188,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListEvidenceTeamsQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvidenceTeams>>> = ({ signal }) => listEvidenceTeams({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEvidenceTeams>>, TError, TData> & { queryKey: QueryKey }
@@ -112,6 +200,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ListEvidenceTeamsQueryResult = NonNullable<Awaited<ReturnType<typeof listEvidenceTeams>>>
 export type ListEvidenceTeamsQueryError = ErrorType<unknown>
+
 
 
 export function useListEvidenceTeams<TData = Awaited<ReturnType<typeof listEvidenceTeams>>, TError = ErrorType<unknown>>(
@@ -127,7 +216,14 @@ export function useListEvidenceTeams<TData = Awaited<ReturnType<typeof listEvide
 }
 
 
+
+
+
+
+
 export const getCreateEvidenceTeamUrl = () => {
+
+
 
 
   return `/api/packaging/teams`
@@ -159,6 +255,9 @@ return customFetch<EvidenceTeam>(getCreateEvidenceTeamUrl(),
 );}
 
 
+
+
+
 export const getCreateEvidenceTeamMutationKey = () => ['createEvidenceTeam'] as const;
 
 export const getCreateEvidenceTeamMutationOptions = <TError = ErrorType<unknown>,
@@ -173,11 +272,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEvidenceTeam>>, CreateEvidenceTeamMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createEvidenceTeam(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -202,6 +307,8 @@ export const getApproveEvidenceMemberUrl = (teamId: string,
     userId: string,) => {
 
 
+
+
   return `/api/packaging/teams/${teamId}/members/${userId}`
 }
 
@@ -218,6 +325,9 @@ export const approveEvidenceMember = async (teamId: string,
 );}
 
 
+
+
+
 export const getApproveEvidenceMemberMutationKey = () => ['approveEvidenceMember'] as const;
 
 export const getApproveEvidenceMemberMutationOptions = <TError = ErrorType<unknown>,
@@ -232,11 +342,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveEvidenceMember>>, ApproveEvidenceMemberMutationVariables> = (props) => {
           const {teamId,userId} = props ?? {};
 
           return  approveEvidenceMember(teamId,userId,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -261,6 +377,8 @@ export const getRevokeEvidenceMemberUrl = (teamId: string,
     userId: string,) => {
 
 
+
+
   return `/api/packaging/teams/${teamId}/members/${userId}`
 }
 
@@ -277,6 +395,9 @@ export const revokeEvidenceMember = async (teamId: string,
 );}
 
 
+
+
+
 export const getRevokeEvidenceMemberMutationKey = () => ['revokeEvidenceMember'] as const;
 
 export const getRevokeEvidenceMemberMutationOptions = <TError = ErrorType<unknown>,
@@ -291,11 +412,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof revokeEvidenceMember>>, RevokeEvidenceMemberMutationVariables> = (props) => {
           const {teamId,userId} = props ?? {};
 
           return  revokeEvidenceMember(teamId,userId,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -318,6 +445,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 export const getUpdateEvidenceSharingUrl = (batchId: string,
     documentId: string,) => {
+
+
 
 
   return `/api/packaging/batches/${batchId}/documents/${documentId}/sharing`
@@ -351,6 +480,9 @@ return customFetch<PackagingDocument>(getUpdateEvidenceSharingUrl(batchId,docume
 );}
 
 
+
+
+
 export const getUpdateEvidenceSharingMutationKey = () => ['updateEvidenceSharing'] as const;
 
 export const getUpdateEvidenceSharingMutationOptions = <TError = ErrorType<unknown>,
@@ -365,11 +497,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateEvidenceSharing>>, UpdateEvidenceSharingMutationVariables> = (props) => {
           const {batchId,documentId,data} = props ?? {};
 
           return  updateEvidenceSharing(batchId,documentId,data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -393,6 +531,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getGetCurrentAuthUserUrl = () => {
 
 
+
+
   return `/api/auth/user`
 }
 
@@ -406,6 +546,9 @@ export const getCurrentAuthUser = async ( options?: Parameters<typeof customFetc
 
   }
 );}
+
+
+
 
 
 export const getGetCurrentAuthUserQueryKey = () => {
@@ -423,7 +566,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetCurrentAuthUserQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentAuthUser>>> = ({ signal }) => getCurrentAuthUser({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrentAuthUser>>, TError, TData> & { queryKey: QueryKey }
@@ -431,6 +578,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetCurrentAuthUserQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentAuthUser>>>
 export type GetCurrentAuthUserQueryError = ErrorType<unknown>
+
 
 
 export function useGetCurrentAuthUser<TData = Awaited<ReturnType<typeof getCurrentAuthUser>>, TError = ErrorType<unknown>>(
@@ -444,6 +592,11 @@ export function useGetCurrentAuthUser<TData = Awaited<ReturnType<typeof getCurre
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
+
+
+
+
 
 
 export const getBeginBrowserLoginUrl = (params?: BeginBrowserLoginParams,) => {
@@ -473,6 +626,9 @@ export const beginBrowserLogin = async (params?: BeginBrowserLoginParams, option
 );}
 
 
+
+
+
 export const getBeginBrowserLoginQueryKey = (params?: BeginBrowserLoginParams,) => {
     return [
     `/api/login`, ...(params ? [params] : [])
@@ -488,7 +644,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getBeginBrowserLoginQueryKey(params);
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof beginBrowserLogin>>> = ({ signal }) => beginBrowserLogin(params, { signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof beginBrowserLogin>>, TError, TData> & { queryKey: QueryKey }
@@ -496,6 +656,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type BeginBrowserLoginQueryResult = NonNullable<Awaited<ReturnType<typeof beginBrowserLogin>>>
 export type BeginBrowserLoginQueryError = ErrorType<void>
+
 
 
 export function useBeginBrowserLogin<TData = Awaited<ReturnType<typeof beginBrowserLogin>>, TError = ErrorType<void>>(
@@ -511,7 +672,14 @@ export function useBeginBrowserLogin<TData = Awaited<ReturnType<typeof beginBrow
 }
 
 
+
+
+
+
+
 export const getHandleBrowserLoginCallbackUrl = () => {
+
+
 
 
   return `/api/callback`
@@ -529,6 +697,9 @@ export const handleBrowserLoginCallback = async ( options?: Parameters<typeof cu
 );}
 
 
+
+
+
 export const getHandleBrowserLoginCallbackQueryKey = () => {
     return [
     `/api/callback`
@@ -544,7 +715,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getHandleBrowserLoginCallbackQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof handleBrowserLoginCallback>>> = ({ signal }) => handleBrowserLoginCallback({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof handleBrowserLoginCallback>>, TError, TData> & { queryKey: QueryKey }
@@ -552,6 +727,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type HandleBrowserLoginCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof handleBrowserLoginCallback>>>
 export type HandleBrowserLoginCallbackQueryError = ErrorType<void>
+
 
 
 export function useHandleBrowserLoginCallback<TData = Awaited<ReturnType<typeof handleBrowserLoginCallback>>, TError = ErrorType<void>>(
@@ -567,7 +743,14 @@ export function useHandleBrowserLoginCallback<TData = Awaited<ReturnType<typeof 
 }
 
 
+
+
+
+
+
 export const getLogoutBrowserSessionUrl = () => {
+
+
 
 
   return `/api/logout`
@@ -585,6 +768,9 @@ export const logoutBrowserSession = async ( options?: Parameters<typeof customFe
 );}
 
 
+
+
+
 export const getLogoutBrowserSessionQueryKey = () => {
     return [
     `/api/logout`
@@ -600,7 +786,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getLogoutBrowserSessionQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof logoutBrowserSession>>> = ({ signal }) => logoutBrowserSession({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof logoutBrowserSession>>, TError, TData> & { queryKey: QueryKey }
@@ -608,6 +798,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type LogoutBrowserSessionQueryResult = NonNullable<Awaited<ReturnType<typeof logoutBrowserSession>>>
 export type LogoutBrowserSessionQueryError = ErrorType<void>
+
 
 
 export function useLogoutBrowserSession<TData = Awaited<ReturnType<typeof logoutBrowserSession>>, TError = ErrorType<void>>(
@@ -623,7 +814,14 @@ export function useLogoutBrowserSession<TData = Awaited<ReturnType<typeof logout
 }
 
 
+
+
+
+
+
 export const getExchangeMobileAuthorizationCodeUrl = () => {
+
+
 
 
   return `/api/mobile-auth/token-exchange`
@@ -655,6 +853,9 @@ return customFetch<ExchangeMobileAuthorizationCode200>(getExchangeMobileAuthoriz
 );}
 
 
+
+
+
 export const getExchangeMobileAuthorizationCodeMutationKey = () => ['exchangeMobileAuthorizationCode'] as const;
 
 export const getExchangeMobileAuthorizationCodeMutationOptions = <TError = ErrorType<unknown>,
@@ -669,11 +870,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof exchangeMobileAuthorizationCode>>, ExchangeMobileAuthorizationCodeMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  exchangeMobileAuthorizationCode(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -697,6 +904,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getLogoutMobileSessionUrl = () => {
 
 
+
+
   return `/api/mobile-auth/logout`
 }
 
@@ -710,6 +919,9 @@ export const logoutMobileSession = async ( options?: Parameters<typeof customFet
 
   }
 );}
+
+
+
 
 
 export const getLogoutMobileSessionMutationKey = () => ['logoutMobileSession'] as const;
@@ -726,11 +938,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof logoutMobileSession>>, void> = () => {
 
 
           return  logoutMobileSession(requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -754,6 +972,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getListPackagingDocumentsUrl = (batchId: string,) => {
 
 
+
+
   return `/api/packaging/batches/${batchId}/documents`
 }
 
@@ -772,6 +992,9 @@ export const listPackagingDocuments = async (batchId: string, options?: Paramete
 );}
 
 
+
+
+
 export const getListPackagingDocumentsQueryKey = (batchId: string,) => {
     return [
     `/api/packaging/batches/${batchId}/documents`
@@ -787,7 +1010,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListPackagingDocumentsQueryKey(batchId);
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listPackagingDocuments>>> = ({ signal }) => listPackagingDocuments(batchId, { signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, enabled: batchId !== null && batchId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPackagingDocuments>>, TError, TData> & { queryKey: QueryKey }
@@ -814,7 +1041,14 @@ export function useListPackagingDocuments<TData = Awaited<ReturnType<typeof list
 }
 
 
+
+
+
+
+
 export const getUploadPackagingDocumentUrl = (batchId: string,) => {
+
+
 
 
   return `/api/packaging/batches/${batchId}/documents`
@@ -850,6 +1084,9 @@ return customFetch<PackagingDocument>(getUploadPackagingDocumentUrl(batchId),
 );}
 
 
+
+
+
 export const getUploadPackagingDocumentMutationKey = () => ['uploadPackagingDocument'] as const;
 
 export const getUploadPackagingDocumentMutationOptions = <TError = ErrorType<void>,
@@ -864,11 +1101,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadPackagingDocument>>, UploadPackagingDocumentMutationVariables> = (props) => {
           const {batchId,data} = props ?? {};
 
           return  uploadPackagingDocument(batchId,data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -896,6 +1139,8 @@ export const getDownloadPackagingDocumentUrl = (batchId: string,
     documentId: string,) => {
 
 
+
+
   return `/api/packaging/batches/${batchId}/documents/${documentId}/download`
 }
 
@@ -910,6 +1155,9 @@ export const downloadPackagingDocument = async (batchId: string,
 
   }
 );}
+
+
+
 
 
 export const getDownloadPackagingDocumentQueryKey = (batchId: string,
@@ -929,7 +1177,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getDownloadPackagingDocumentQueryKey(batchId,documentId);
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadPackagingDocument>>> = ({ signal }) => downloadPackagingDocument(batchId,documentId, { signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, enabled: batchId !== null && batchId !== undefined && documentId !== null && documentId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadPackagingDocument>>, TError, TData> & { queryKey: QueryKey }
@@ -937,6 +1189,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type DownloadPackagingDocumentQueryResult = NonNullable<Awaited<ReturnType<typeof downloadPackagingDocument>>>
 export type DownloadPackagingDocumentQueryError = ErrorType<void>
+
 
 
 export function useDownloadPackagingDocument<TData = Awaited<ReturnType<typeof downloadPackagingDocument>>, TError = ErrorType<void>>(
@@ -953,7 +1206,14 @@ export function useDownloadPackagingDocument<TData = Awaited<ReturnType<typeof d
 }
 
 
+
+
+
+
+
 export const getListPackagingBatchesUrl = () => {
+
+
 
 
   return `/api/packaging/batches`
@@ -971,6 +1231,9 @@ export const listPackagingBatches = async ( options?: Parameters<typeof customFe
 );}
 
 
+
+
+
 export const getListPackagingBatchesQueryKey = () => {
     return [
     `/api/packaging/batches`
@@ -986,7 +1249,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListPackagingBatchesQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listPackagingBatches>>> = ({ signal }) => listPackagingBatches({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPackagingBatches>>, TError, TData> & { queryKey: QueryKey }
@@ -994,6 +1261,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ListPackagingBatchesQueryResult = NonNullable<Awaited<ReturnType<typeof listPackagingBatches>>>
 export type ListPackagingBatchesQueryError = ErrorType<unknown>
+
 
 
 export function useListPackagingBatches<TData = Awaited<ReturnType<typeof listPackagingBatches>>, TError = ErrorType<unknown>>(
@@ -1009,7 +1277,14 @@ export function useListPackagingBatches<TData = Awaited<ReturnType<typeof listPa
 }
 
 
+
+
+
+
+
 export const getCreatePackagingBatchUrl = () => {
+
+
 
 
   return `/api/packaging/batches`
@@ -1041,6 +1316,9 @@ return customFetch<PackagingBatch>(getCreatePackagingBatchUrl(),
 );}
 
 
+
+
+
 export const getCreatePackagingBatchMutationKey = () => ['createPackagingBatch'] as const;
 
 export const getCreatePackagingBatchMutationOptions = <TError = ErrorType<unknown>,
@@ -1055,11 +1333,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPackagingBatch>>, CreatePackagingBatchMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createPackagingBatch(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1081,6 +1365,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdatePackagingBatchUrl = (id: string,) => {
+
+
 
 
   return `/api/packaging/batches/${id}`
@@ -1113,6 +1399,9 @@ return customFetch<PackagingBatch>(getUpdatePackagingBatchUrl(id),
 );}
 
 
+
+
+
 export const getUpdatePackagingBatchMutationKey = () => ['updatePackagingBatch'] as const;
 
 export const getUpdatePackagingBatchMutationOptions = <TError = ErrorType<void | PackagingBatchConflict>,
@@ -1127,11 +1416,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePackagingBatch>>, UpdatePackagingBatchMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
           return  updatePackagingBatch(id,data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1153,6 +1448,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getSearchPackagingTraceUrl = () => {
+
+
 
 
   return `/api/packaging/search`
@@ -1184,6 +1481,9 @@ return customFetch<PackagingSearchResult>(getSearchPackagingTraceUrl(),
 );}
 
 
+
+
+
 export const getSearchPackagingTraceMutationKey = () => ['searchPackagingTrace'] as const;
 
 export const getSearchPackagingTraceMutationOptions = <TError = ErrorType<unknown>,
@@ -1198,11 +1498,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof searchPackagingTrace>>, SearchPackagingTraceMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  searchPackagingTrace(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1226,6 +1532,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getListQualityActionsUrl = () => {
 
 
+
+
   return `/api/quality-actions`
 }
 
@@ -1239,6 +1547,9 @@ export const listQualityActions = async ( options?: Parameters<typeof customFetc
 
   }
 );}
+
+
+
 
 
 export const getListQualityActionsQueryKey = () => {
@@ -1256,7 +1567,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListQualityActionsQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listQualityActions>>> = ({ signal }) => listQualityActions({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listQualityActions>>, TError, TData> & { queryKey: QueryKey }
@@ -1264,6 +1579,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ListQualityActionsQueryResult = NonNullable<Awaited<ReturnType<typeof listQualityActions>>>
 export type ListQualityActionsQueryError = ErrorType<unknown>
+
 
 
 export function useListQualityActions<TData = Awaited<ReturnType<typeof listQualityActions>>, TError = ErrorType<unknown>>(
@@ -1279,7 +1595,14 @@ export function useListQualityActions<TData = Awaited<ReturnType<typeof listQual
 }
 
 
+
+
+
+
+
 export const getRecordQualityActionUrl = () => {
+
+
 
 
   return `/api/quality-actions`
@@ -1311,6 +1634,9 @@ return customFetch<QualityAction>(getRecordQualityActionUrl(),
 );}
 
 
+
+
+
 export const getRecordQualityActionMutationKey = () => ['recordQualityAction'] as const;
 
 export const getRecordQualityActionMutationOptions = <TError = ErrorType<unknown>,
@@ -1325,11 +1651,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordQualityAction>>, RecordQualityActionMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  recordQualityAction(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1353,6 +1685,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getDeleteQualityActionUrl = (requestId: string,) => {
 
 
+
+
   return `/api/quality-actions/${requestId}`
 }
 
@@ -1366,6 +1700,9 @@ export const deleteQualityAction = async (requestId: string, options?: Parameter
 
   }
 );}
+
+
+
 
 
 export const getDeleteQualityActionMutationKey = () => ['deleteQualityAction'] as const;
@@ -1382,11 +1719,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteQualityAction>>, DeleteQualityActionMutationVariables> = (props) => {
           const {requestId} = props ?? {};
 
           return  deleteQualityAction(requestId,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1434,6 +1777,9 @@ export const getTrace = async (params?: GetTraceParams, options?: Parameters<typ
 );}
 
 
+
+
+
 export const getGetTraceQueryKey = (params?: GetTraceParams,) => {
     return [
     `/api/trace`, ...(params ? [params] : [])
@@ -1449,7 +1795,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetTraceQueryKey(params);
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getTrace>>> = ({ signal }) => getTrace(params, { signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTrace>>, TError, TData> & { queryKey: QueryKey }
@@ -1457,6 +1807,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetTraceQueryResult = NonNullable<Awaited<ReturnType<typeof getTrace>>>
 export type GetTraceQueryError = ErrorType<unknown>
+
 
 
 export function useGetTrace<TData = Awaited<ReturnType<typeof getTrace>>, TError = ErrorType<unknown>>(
@@ -1472,7 +1823,14 @@ export function useGetTrace<TData = Awaited<ReturnType<typeof getTrace>>, TError
 }
 
 
+
+
+
+
+
 export const getUpdateRunUrl = (id: string,) => {
+
+
 
 
   return `/api/runs/${id}`
@@ -1505,6 +1863,9 @@ return customFetch<Run>(getUpdateRunUrl(id),
 );}
 
 
+
+
+
 export const getUpdateRunMutationKey = () => ['updateRun'] as const;
 
 export const getUpdateRunMutationOptions = <TError = ErrorType<unknown>,
@@ -1519,11 +1880,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateRun>>, UpdateRunMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
           return  updateRun(id,data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1545,6 +1912,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getAddDestinationUrl = (id: string,) => {
+
+
 
 
   return `/api/runs/${id}/destinations`
@@ -1577,6 +1946,9 @@ return customFetch<Run>(getAddDestinationUrl(id),
 );}
 
 
+
+
+
 export const getAddDestinationMutationKey = () => ['addDestination'] as const;
 
 export const getAddDestinationMutationOptions = <TError = ErrorType<unknown>,
@@ -1591,11 +1963,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof addDestination>>, AddDestinationMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
           return  addDestination(id,data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1619,6 +1997,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getHealthCheckUrl = () => {
 
 
+
+
   return `/api/healthz`
 }
 
@@ -1638,6 +2018,9 @@ export const healthCheck = async ( options?: Parameters<typeof customFetch>[1]):
 );}
 
 
+
+
+
 export const getHealthCheckQueryKey = () => {
     return [
     `/api/healthz`
@@ -1653,7 +2036,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getHealthCheckQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheck>>> = ({ signal }) => healthCheck({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData> & { queryKey: QueryKey }
@@ -1678,4 +2065,10 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
+
+
+
+
+
 

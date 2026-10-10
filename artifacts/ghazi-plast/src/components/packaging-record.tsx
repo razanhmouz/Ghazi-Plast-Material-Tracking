@@ -6,6 +6,8 @@ import { Factory, Layers, Package, Truck, ShieldAlert, Pencil } from "lucide-rea
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AllocationFields, AllocationTrace } from "./packaging-allocations";
 import { PackagingDocuments } from "./packaging-documents";
+import { PackagingAllocationHistory } from "./packaging-allocation-history";
+import { getListPackagingAllocationHistoryQueryKey } from "@workspace/api-client-react";
 
 export const packagingLabels: Record<string, string> = { ink: "Ink", adhesive: "Adhesive", coating: "Coating", raw_material: "Raw material", pending: "Pending", released: "Released", hold: "On hold", documented: "Documented", review_required: "Review required" };
 export function PackagingBadge({ value }: { value: string }) { return <span className={`ptc-badge ${value}`}>{packagingLabels[value] || value}</span>; }
@@ -24,6 +26,7 @@ export function PackagingDetail({ batch, close, edit }: { batch: PackagingBatch 
     </div>
     <small>These aggregate links remain unallocated: no pairing or quantity is implied. Only the explicit allocations below establish exact mappings.</small>
     <AllocationTrace allocations={batch.allocations ?? []}/>
+    <PackagingAllocationHistory batchId={batch.id}/>
     <div className="ptc-detail-grid"><div><h3>Supplier information</h3><p>{batch.supplierContact || "Contact not recorded"}</p><small>Last updated {new Date(batch.updatedAt).toLocaleString()}</small></div><div><h3>Quality documentation</h3><p>Reference: {batch.documentRef || "Not recorded"}</p><p>{batch.complianceNotes || "No compliance notes recorded."}</p></div></div>
     <div className="ptc-note"><ShieldAlert/>Human-entered declarations, not independently verified legal compliance or certification. Release status is a recorded decision, not an automated approval.</div>
     <PackagingDocuments key={batch.id} batchId={batch.id}/>
@@ -75,7 +78,7 @@ export function PackagingEditor({ batch, close, saved }: { batch: PackagingBatch
       pairs.add(pair); units.set(lot,a.unit);
     }
     const data: PackagingBatchInput = {...form,lotId:form.lotId.trim(),materialName:form.materialName.trim(),supplierName:form.supplierName.trim(),documentRef:form.documentRef.trim(),quantity:Number(quantity),finishedBatches:lots,destinations:customers,allocations};
-    const options = {onSuccess: (b: PackagingBatch) => {qc.setQueryData<PackagingBatch[]>(getListPackagingBatchesQueryKey(),old => old ? (old.some(r=>r.id===b.id) ? old.map(r=>r.id===b.id?b:r) : [b,...old]) : [b]);void qc.invalidateQueries({queryKey:getListPackagingBatchesQueryKey()});saved(b);},onError:(e:unknown)=>{
+    const options = {onSuccess: (b: PackagingBatch) => {qc.setQueryData<PackagingBatch[]>(getListPackagingBatchesQueryKey(),old => old ? (old.some(r=>r.id===b.id) ? old.map(r=>r.id===b.id?b:r) : [b,...old]) : [b]);void qc.invalidateQueries({queryKey:getListPackagingBatchesQueryKey()});void qc.invalidateQueries({queryKey:getListPackagingAllocationHistoryQueryKey(b.id)});saved(b);},onError:(e:unknown)=>{
       const failure = e as { status?: number; data?: { code?: string; current?: PackagingBatch } };
       if (failure?.status === 409 && failure.data?.code === "EDIT_CONFLICT" && failure.data.current) {
         setConflict(failure.data.current);

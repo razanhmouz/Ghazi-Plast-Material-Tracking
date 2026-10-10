@@ -5,6 +5,16 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+/**
+ * Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session
+ */
+export type PackagingAllocationChangeAttribution = typeof PackagingAllocationChangeAttribution[keyof typeof PackagingAllocationChangeAttribution];
+
+
+export const PackagingAllocationChangeAttribution = {
+  shared_demo: 'shared_demo',
+} as const;
+
 export type PackagingAllocationUnit = typeof PackagingAllocationUnit[keyof typeof PackagingAllocationUnit];
 
 
@@ -37,6 +47,17 @@ export interface PackagingAllocation {
      */
   quantity: number;
   unit: PackagingAllocationUnit;
+}
+
+export interface PackagingAllocationChange {
+  id: string;
+  batchId: string;
+  lotId: string;
+  before: PackagingAllocation[];
+  after: PackagingAllocation[];
+  createdAt: string;
+  /** Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session */
+  attribution: PackagingAllocationChangeAttribution;
 }
 
 export interface AuthUser {
@@ -217,6 +238,14 @@ export type PackagingBatchUpdate = PackagingBatchInput & {
   /** updatedAt from the record the editor last reviewed */
   expectedUpdatedAt: string;
 };
+
+export type PackagingBatchConflictCode = typeof PackagingBatchConflictCode[keyof typeof PackagingBatchConflictCode];
+
+
+export const PackagingBatchConflictCode = {
+  EDIT_CONFLICT: 'EDIT_CONFLICT',
+} as const;
+
 export type PackagingBatch = PackagingBatchInput & {
   id: string;
   demo: boolean;
@@ -228,6 +257,7 @@ export interface PackagingBatchConflict {
   code?: PackagingBatchConflictCode;
   current?: PackagingBatch;
 }
+
 export interface PackagingSearchInput {
   /**
      * @minLength 1
@@ -452,9 +482,3 @@ export type GetTraceParams = {
 search?: string;
 };
 
-
-export type PackagingBatchConflictCode = typeof PackagingBatchConflictCode[keyof typeof PackagingBatchConflictCode];
-
-export const PackagingBatchConflictCode = {
-  EDIT_CONFLICT: 'EDIT_CONFLICT',
-} as const;

@@ -8,6 +8,55 @@
 import * as zod from 'zod';
 
 
+/**
+ * @summary Read allocation snapshots, newest first, from the shared demo registry
+ */
+export const listPackagingAllocationHistoryPathIdMax = 100;
+
+
+
+export const ListPackagingAllocationHistoryParams = zod.object({
+  "id": zod.coerce.string().min(1).max(listPackagingAllocationHistoryPathIdMax)
+})
+
+export const listPackagingAllocationHistoryResponseBeforeItemFinishedLotIdMax = 100;
+
+export const listPackagingAllocationHistoryResponseBeforeItemCustomerMax = 200;
+
+export const listPackagingAllocationHistoryResponseBeforeItemQuantityExclusiveMin = 0;
+export const listPackagingAllocationHistoryResponseBeforeItemQuantityMax = 1000000000;
+
+export const listPackagingAllocationHistoryResponseAfterItemFinishedLotIdMax = 100;
+
+export const listPackagingAllocationHistoryResponseAfterItemCustomerMax = 200;
+
+export const listPackagingAllocationHistoryResponseAfterItemQuantityExclusiveMin = 0;
+export const listPackagingAllocationHistoryResponseAfterItemQuantityMax = 1000000000;
+
+
+
+export const ListPackagingAllocationHistoryResponseItem = zod.object({
+  "id": zod.string(),
+  "batchId": zod.string(),
+  "lotId": zod.string(),
+  "before": zod.array(zod.object({
+  "finishedLotId": zod.string().min(1).max(listPackagingAllocationHistoryResponseBeforeItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(listPackagingAllocationHistoryResponseBeforeItemCustomerMax),
+  "quantity": zod.number().gt(listPackagingAllocationHistoryResponseBeforeItemQuantityExclusiveMin).max(listPackagingAllocationHistoryResponseBeforeItemQuantityMax),
+  "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
+}).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')),
+  "after": zod.array(zod.object({
+  "finishedLotId": zod.string().min(1).max(listPackagingAllocationHistoryResponseAfterItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(listPackagingAllocationHistoryResponseAfterItemCustomerMax),
+  "quantity": zod.number().gt(listPackagingAllocationHistoryResponseAfterItemQuantityExclusiveMin).max(listPackagingAllocationHistoryResponseAfterItemQuantityMax),
+  "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
+}).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')),
+  "createdAt": zod.coerce.date(),
+  "attribution": zod.enum(['shared_demo']).describe('Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session')
+})
+export const ListPackagingAllocationHistoryResponse = zod.array(ListPackagingAllocationHistoryResponseItem)
+
+
 export const ListEvidenceTeamsResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
@@ -18,6 +67,7 @@ export const ListEvidenceTeamsResponse = zod.array(ListEvidenceTeamsResponseItem
 
 
 export const createEvidenceTeamBodyNameMax = 80;
+
 
 
 export const CreateEvidenceTeamBody = zod.object({
@@ -96,6 +146,13 @@ export const HandleBrowserLoginCallbackResponse = zod.void()
 export const LogoutBrowserSessionResponse = zod.void()
 
 
+
+
+
+
+
+
+
 export const ExchangeMobileAuthorizationCodeBody = zod.object({
   "code": zod.string().min(1),
   "code_verifier": zod.string().min(1),
@@ -118,6 +175,7 @@ export const LogoutMobileSessionResponse = zod.object({
  * @summary List the signed-in uploader's evidence for this batch
  */
 export const listPackagingDocumentsPathBatchIdMax = 100;
+
 
 
 export const ListPackagingDocumentsParams = zod.object({
@@ -146,11 +204,13 @@ export const ListPackagingDocumentsResponse = zod.array(ListPackagingDocumentsRe
 export const uploadPackagingDocumentPathBatchIdMax = 100;
 
 
+
 export const UploadPackagingDocumentParams = zod.object({
   "batchId": zod.coerce.string().min(1).max(uploadPackagingDocumentPathBatchIdMax)
 })
 
 export const uploadPackagingDocumentHeaderXDocumentNameMax = 1620;
+
 
 
 export const UploadPackagingDocumentHeader = zod.object({
@@ -174,6 +234,7 @@ export const UploadPackagingDocumentResponse = zod.object({
 
 
 export const downloadPackagingDocumentPathBatchIdMax = 100;
+
 
 
 export const DownloadPackagingDocumentParams = zod.object({
@@ -217,6 +278,7 @@ export const listPackagingBatchesResponseOneAllocationsItemQuantityExclusiveMin 
 export const listPackagingBatchesResponseOneAllocationsItemQuantityMax = 1000000000;
 
 export const listPackagingBatchesResponseOneAllocationsMax = 100;
+
 
 
 export const ListPackagingBatchesResponseItem = zod.object({
@@ -283,6 +345,7 @@ export const createPackagingBatchBodyAllocationsItemQuantityMax = 1000000000;
 export const createPackagingBatchBodyAllocationsMax = 100;
 
 
+
 export const CreatePackagingBatchBody = zod.object({
   "lotId": zod.string().min(1).max(createPackagingBatchBodyLotIdMax),
   "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
@@ -341,6 +404,7 @@ export const createPackagingBatchResponseOneAllocationsItemQuantityMax = 1000000
 export const createPackagingBatchResponseOneAllocationsMax = 100;
 
 
+
 export const CreatePackagingBatchResponse = zod.object({
   "lotId": zod.string().min(1).max(createPackagingBatchResponseOneLotIdMax),
   "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
@@ -374,23 +438,41 @@ export const UpdatePackagingBatchParams = zod.object({
 })
 
 export const updatePackagingBatchBodyOneLotIdMax = 100;
+
 export const updatePackagingBatchBodyOneMaterialNameMax = 200;
+
 export const updatePackagingBatchBodyOneSupplierNameMax = 200;
+
 export const updatePackagingBatchBodyOneSupplierCountryMax = 100;
+
 export const updatePackagingBatchBodyOneSupplierContactMax = 200;
+
 export const updatePackagingBatchBodyOneQuantityMin = 0;
 export const updatePackagingBatchBodyOneQuantityMax = 1000000000;
+
 export const updatePackagingBatchBodyOneDocumentRefMax = 300;
+
 export const updatePackagingBatchBodyOneComplianceNotesMax = 3000;
+
 export const updatePackagingBatchBodyOneFinishedBatchesItemMax = 100;
+
 export const updatePackagingBatchBodyOneFinishedBatchesMax = 100;
+
 export const updatePackagingBatchBodyOneDestinationsItemMax = 200;
+
 export const updatePackagingBatchBodyOneDestinationsMax = 100;
+
 export const updatePackagingBatchBodyOneAllocationsItemFinishedLotIdMax = 100;
+
 export const updatePackagingBatchBodyOneAllocationsItemCustomerMax = 200;
+
 export const updatePackagingBatchBodyOneAllocationsItemQuantityExclusiveMin = 0;
 export const updatePackagingBatchBodyOneAllocationsItemQuantityMax = 1000000000;
+
 export const updatePackagingBatchBodyOneAllocationsMax = 100;
+
+
+
 export const UpdatePackagingBatchBody = zod.object({
   "lotId": zod.string().min(1).max(updatePackagingBatchBodyOneLotIdMax),
   "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
@@ -451,6 +533,7 @@ export const updatePackagingBatchResponseOneAllocationsItemQuantityMax = 1000000
 export const updatePackagingBatchResponseOneAllocationsMax = 100;
 
 
+
 export const UpdatePackagingBatchResponse = zod.object({
   "lotId": zod.string().min(1).max(updatePackagingBatchResponseOneLotIdMax),
   "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
@@ -482,6 +565,7 @@ export const UpdatePackagingBatchResponse = zod.object({
 export const searchPackagingTraceBodyQueryMax = 1500;
 
 
+
 export const SearchPackagingTraceBody = zod.object({
   "query": zod.string().min(1).max(searchPackagingTraceBodyQueryMax)
 })
@@ -510,6 +594,7 @@ export const recordQualityActionBodyBatchIdsMax = 100;
 export const recordQualityActionBodyRationaleMax = 5000;
 
 
+
 export const RecordQualityActionBody = zod.object({
   "requestId": zod.string().min(1).max(recordQualityActionBodyRequestIdMax),
   "action": zod.enum(['recall', 'release']),
@@ -530,6 +615,7 @@ export const RecordQualityActionResponse = zod.object({
 export const deleteQualityActionPathRequestIdMax = 100;
 
 
+
 export const DeleteQualityActionParams = zod.object({
   "requestId": zod.coerce.string().min(1).max(deleteQualityActionPathRequestIdMax)
 })
@@ -544,6 +630,7 @@ export const GetTraceQueryParams = zod.object({
 export const getTraceResponseRunsItemChecklistItemLabelMax = 200;
 
 export const getTraceResponseRunsItemChecklistItemNotesMax = 2000;
+
 
 
 export const GetTraceResponse = zod.object({
@@ -593,6 +680,7 @@ export const updateRunBodyInkLotMax = 100;
 export const updateRunBodyQualityNotesMax = 5000;
 
 
+
 export const UpdateRunBody = zod.object({
   "checklist": zod.array(zod.object({
   "label": zod.string().min(1).max(updateRunBodyChecklistItemLabelMax),
@@ -608,6 +696,7 @@ export const UpdateRunBody = zod.object({
 export const updateRunResponseChecklistItemLabelMax = 200;
 
 export const updateRunResponseChecklistItemNotesMax = 2000;
+
 
 
 export const UpdateRunResponse = zod.object({
@@ -645,6 +734,7 @@ export const addDestinationBodyNameMax = 200;
 export const addDestinationBodyQuantityMax = 1000000000;
 
 
+
 export const AddDestinationBody = zod.object({
   "requestId": zod.string().min(1).max(addDestinationBodyRequestIdMax),
   "name": zod.string().min(1).max(addDestinationBodyNameMax),
@@ -656,6 +746,7 @@ export const AddDestinationBody = zod.object({
 export const addDestinationResponseChecklistItemLabelMax = 200;
 
 export const addDestinationResponseChecklistItemNotesMax = 2000;
+
 
 
 export const AddDestinationResponse = zod.object({
@@ -691,36 +782,3 @@ export const HealthCheckResponse = zod.object({
 })
 
 
-export const updatePackagingBatchBodyOneMaterialNameMax = 200;
-
-export const updatePackagingBatchBodyOneDestinationsItemMax = 200;
-
-export const updatePackagingBatchBodyOneAllocationsItemCustomerMax = 200;
-
-export const updatePackagingBatchBodyOneAllocationsItemQuantityExclusiveMin = 0;
-
-export const updatePackagingBatchBodyOneComplianceNotesMax = 3000;
-
-export const updatePackagingBatchBodyOneSupplierContactMax = 200;
-
-export const updatePackagingBatchBodyOneAllocationsMax = 100;
-
-export const updatePackagingBatchBodyOneFinishedBatchesItemMax = 100;
-
-export const updatePackagingBatchBodyOneDocumentRefMax = 300;
-
-export const updatePackagingBatchBodyOneSupplierCountryMax = 100;
-
-export const updatePackagingBatchBodyOneFinishedBatchesMax = 100;
-
-export const updatePackagingBatchBodyOneDestinationsMax = 100;
-
-export const updatePackagingBatchBodyOneSupplierNameMax = 200;
-
-export const updatePackagingBatchBodyOneQuantityMax = 1000000000;
-
-export const updatePackagingBatchBodyOneAllocationsItemQuantityMax = 1000000000;
-
-export const updatePackagingBatchBodyOneQuantityMin = 0;
-
-export const updatePackagingBatchBodyOneAllocationsItemFinishedLotIdMax = 100;

@@ -1,5 +1,5 @@
-import { pgTable, text, boolean, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
 import { packagingTeams } from "./packaging-teams";
+import { pgTable, text, boolean, timestamp, jsonb, integer, index } from "drizzle-orm/pg-core";
 
 export const packagingBatches = pgTable("packaging_batches", {
   id: text("id").primaryKey(),
@@ -29,6 +29,7 @@ export const packagingBatches = pgTable("packaging_batches", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+type Allocations = NonNullable<typeof packagingBatches.$inferSelect.data.allocations>;
 export const packagingDocuments = pgTable("packaging_documents", {
   id: text("id").primaryKey(),
   batchId: text("batch_id").notNull().references(() => packagingBatches.id),
@@ -45,3 +46,13 @@ export const packagingDocuments = pgTable("packaging_documents", {
   scanSha256: text("scan_sha256"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const packagingAllocationHistory = pgTable("packaging_allocation_history", {
+  id: text("id").primaryKey(),
+  batchId: text("batch_id").notNull().references(() => packagingBatches.id),
+  lotId: text("lot_id").notNull(),
+  before: jsonb("before").$type<Allocations>().notNull(),
+  after: jsonb("after").$type<Allocations>().notNull(),
+  attribution: text("attribution").$type<"shared_demo">().notNull().default("shared_demo"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [index("packaging_allocation_history_batch_time").on(table.batchId, table.createdAt)]);

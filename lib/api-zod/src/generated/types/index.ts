@@ -26,6 +26,8 @@ export * from './logoutMobileSession200';
 export * from './material';
 export * from './mobileTokenExchangeRequest';
 export * from './packagingAllocation';
+export * from './packagingAllocationChange';
+export * from './packagingAllocationChangeAttribution';
 export * from './packagingAllocationUnit';
 export * from './packagingBatch';
 export * from './packagingBatchConflict';

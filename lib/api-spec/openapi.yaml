@@ -11,6 +11,22 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /packaging/batches/{id}/allocation-history:
+    get:
+      operationId: listPackagingAllocationHistory
+      summary: Read allocation snapshots, newest first, from the shared demo registry
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+      responses:
+        "200":
+          description: Changes recorded since history tracking began; no historical identities are inferred
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PackagingAllocationChange" }
+        "400": { description: Invalid batch ID }
+        "404": { description: Batch not found }
   /packaging/teams:
     get:
       operationId: listEvidenceTeams
@@ -336,6 +352,24 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    PackagingAllocationChange:
+      type: object
+      required: [id, batchId, lotId, before, after, createdAt, attribution]
+      properties:
+        id: { type: string }
+        batchId: { type: string }
+        lotId: { type: string }
+        before:
+          type: array
+          items: { $ref: "#/components/schemas/PackagingAllocation" }
+        after:
+          type: array
+          items: { $ref: "#/components/schemas/PackagingAllocation" }
+        createdAt: { type: string, format: date-time }
+        attribution:
+          type: string
+          enum: [shared_demo]
+          description: Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session
     PackagingAllocation:
       type: object
       description: Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.

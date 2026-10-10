@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListQualityActions, useRecordQualityAction, getListQualityActionsQueryKey } from "@workspace/api-client-react";
 import type { QualityAction, QualityActionInput, Run } from "@workspace/api-client-react";
-import { Gavel, History, OctagonAlert, PackageCheck, RefreshCw, ShieldAlert } from "lucide-react";
+import { Gavel, History, OctagonAlert, PackageCheck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -17,8 +17,6 @@ const ACT: Record<Action, { label: string; verb: string; Icon: typeof Gavel; cls
   recall: { label: "Issue Recall Order", verb: "Recall order", Icon: OctagonAlert, cls: "tone-bad" },
   release: { label: "Release Shipment", verb: "Release instruction", Icon: PackageCheck, cls: "tone-ok" },
 };
-
-export const DISCLAIMER = "the tool supports human decision-making; it does not automatically notify customers or initiate a product recall.";
 
 export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
   const qc = useQueryClient();
@@ -71,9 +69,6 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
         <h2 className="font-semibold tracking-tight">Quality Decision Panel</h2>
         <span className="font-mono text-[10px] uppercase tracking-wider opacity-70">For the Quality Manager · identity not verified in this shared demo</span>
       </div>
-      <p data-testid="text-disclaimer" className="px-4 md:px-5 py-2.5 text-sm border-b tone-warn border-x-0 border-t-0 flex gap-2">
-        <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />{DISCLAIMER}
-      </p>
       <div className="grid lg:grid-cols-[1.15fr_1fr]">
         <div className="p-4 md:p-5 space-y-4 lg:border-r">
           <div>

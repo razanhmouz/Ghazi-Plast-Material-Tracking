@@ -4,7 +4,6 @@ const steps = [
   {
     title: "Receive & link records",
     owner: "Production Department",
-    description: "Receive P-77 records and supplier documentation, then link them to both cup production runs: CUP-501 and CUP-502.",
   },
   {
     title: "Record quality & deliveries",
@@ -75,7 +74,7 @@ export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
                 <h3 className="font-semibold text-sm leading-tight">{step.title}</h3>
               </div>
               <p className="micro !text-primary/90 mb-1">{step.owner}</p>
-              <p className="text-xs leading-relaxed text-muted-foreground">{step.description}</p>
+              {step.description && <p className="text-xs leading-relaxed text-muted-foreground">{step.description}</p>}
             </li>
           );
         })}

@@ -8,6 +8,71 @@
 import * as zod from 'zod';
 
 
+export const ListEvidenceTeamsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "isOwner": zod.boolean(),
+  "members": zod.array(zod.string())
+})
+export const ListEvidenceTeamsResponse = zod.array(ListEvidenceTeamsResponseItem)
+
+
+export const createEvidenceTeamBodyNameMax = 80;
+
+
+
+export const CreateEvidenceTeamBody = zod.object({
+  "name": zod.string().min(1).max(createEvidenceTeamBodyNameMax)
+})
+
+export const CreateEvidenceTeamResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "isOwner": zod.boolean(),
+  "members": zod.array(zod.string())
+})
+
+
+export const ApproveEvidenceMemberParams = zod.object({
+  "teamId": zod.coerce.string(),
+  "userId": zod.coerce.string()
+})
+
+export const ApproveEvidenceMemberResponse = zod.void()
+
+
+export const RevokeEvidenceMemberParams = zod.object({
+  "teamId": zod.coerce.string(),
+  "userId": zod.coerce.string()
+})
+
+export const RevokeEvidenceMemberResponse = zod.void()
+
+
+export const UpdateEvidenceSharingParams = zod.object({
+  "batchId": zod.coerce.string(),
+  "documentId": zod.coerce.string()
+})
+
+export const UpdateEvidenceSharingBody = zod.object({
+  "sharedTeamId": zod.string().nullable()
+})
+
+export const UpdateEvidenceSharingResponse = zod.object({
+  "scanStatus": zod.enum(['pending', 'clean', 'rejected', 'scan_error']),
+  "scannedAt": zod.coerce.date().nullable(),
+  "sharedTeamId": zod.string().nullable(),
+  "canManage": zod.boolean(),
+  "id": zod.string(),
+  "batchId": zod.string(),
+  "kind": zod.enum(['supplier_declaration', 'migration_report', 'inspection_report']),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "createdAt": zod.coerce.date()
+})
+
+
 export const GetCurrentAuthUserResponse = zod.object({
   "user": zod.union([zod.object({
   "id": zod.string(),
@@ -69,14 +134,16 @@ export const ListPackagingDocumentsParams = zod.object({
 })
 
 export const ListPackagingDocumentsResponseItem = zod.object({
+  "scanStatus": zod.enum(['pending', 'clean', 'rejected', 'scan_error']),
+  "scannedAt": zod.coerce.date().nullable(),
+  "sharedTeamId": zod.string().nullable(),
+  "canManage": zod.boolean(),
   "id": zod.string(),
   "batchId": zod.string(),
   "kind": zod.enum(['supplier_declaration', 'migration_report', 'inspection_report']),
   "name": zod.string(),
   "contentType": zod.string(),
   "size": zod.number().int(),
-  "scanStatus": zod.enum(['pending', 'clean', 'rejected', 'scan_error']),
-  "scannedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
 export const ListPackagingDocumentsResponse = zod.array(ListPackagingDocumentsResponseItem)
@@ -103,14 +170,16 @@ export const UploadPackagingDocumentHeader = zod.object({
 })
 
 export const UploadPackagingDocumentResponse = zod.object({
+  "scanStatus": zod.enum(['pending', 'clean', 'rejected', 'scan_error']),
+  "scannedAt": zod.coerce.date().nullable(),
+  "sharedTeamId": zod.string().nullable(),
+  "canManage": zod.boolean(),
   "id": zod.string(),
   "batchId": zod.string(),
   "kind": zod.enum(['supplier_declaration', 'migration_report', 'inspection_report']),
   "name": zod.string(),
   "contentType": zod.string(),
   "size": zod.number().int(),
-  "scanStatus": zod.enum(['pending', 'clean', 'rejected', 'scan_error']),
-  "scannedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
 

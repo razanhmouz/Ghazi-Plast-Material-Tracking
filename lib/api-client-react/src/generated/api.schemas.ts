@@ -68,14 +68,25 @@ export interface MobileTokenExchangeRequest {
   nonce?: string;
 }
 
-export type PackagingDocumentKind = typeof PackagingDocumentKind[keyof typeof PackagingDocumentKind];
+export interface EvidenceTeamInput {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  name: string;
+}
 
+export interface EvidenceSharingInput {
+  /** @nullable */
+  sharedTeamId: string | null;
+}
 
-export const PackagingDocumentKind = {
-  supplier_declaration: 'supplier_declaration',
-  migration_report: 'migration_report',
-  inspection_report: 'inspection_report',
-} as const;
+export interface EvidenceTeam {
+  id: string;
+  name: string;
+  isOwner: boolean;
+  members: string[];
+}
 
 export type PackagingDocumentScanStatus = typeof PackagingDocumentScanStatus[keyof typeof PackagingDocumentScanStatus];
 
@@ -87,16 +98,28 @@ export const PackagingDocumentScanStatus = {
   scan_error: 'scan_error',
 } as const;
 
+export type PackagingDocumentKind = typeof PackagingDocumentKind[keyof typeof PackagingDocumentKind];
+
+
+export const PackagingDocumentKind = {
+  supplier_declaration: 'supplier_declaration',
+  migration_report: 'migration_report',
+  inspection_report: 'inspection_report',
+} as const;
+
 export interface PackagingDocument {
+  scanStatus: PackagingDocumentScanStatus;
+  /** @nullable */
+  scannedAt: string | null;
+  /** @nullable */
+  sharedTeamId: string | null;
+  canManage: boolean;
   id: string;
   batchId: string;
   kind: PackagingDocumentKind;
   name: string;
   contentType: string;
   size: number;
-  scanStatus: PackagingDocumentScanStatus;
-  /** @nullable */
-  scannedAt: string | null;
   createdAt: string;
 }
 

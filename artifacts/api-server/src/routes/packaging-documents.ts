@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
 import express, { Router, type IRouter } from "express";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
+import { teamsForUser } from "./packaging-teams";
 import { db, packagingBatches, packagingDocuments } from "@workspace/db";
 import {
   ListPackagingDocumentsParams, ListPackagingDocumentsResponse,
   UploadPackagingDocumentParams, UploadPackagingDocumentHeader, UploadPackagingDocumentResponse,
   DownloadPackagingDocumentParams,
+  UpdateEvidenceSharingBody,
 } from "@workspace/api-zod";
 import { objectStorageClient, ObjectStorageService } from "../lib/objectStorage";
 import { MAX_DOCUMENT_BYTES, validateDocument } from "../lib/packaging-file-validation";
@@ -14,7 +16,9 @@ import { evidenceDigest, readEvidence } from "../lib/packaging-scan-worker";
 const router: IRouter = Router();
 const base = "/packaging/batches/:batchId/documents";
 const storage = new ObjectStorageService();
-const serialize = ({ ownerId: _owner, objectPath: _path, scanSha256: _hash, scanRetryAt: _retry, ...row }: typeof packagingDocuments.$inferSelect) => row;
+const serialize = ({ ownerId, objectPath: _path, scanSha256: _hash, scanRetryAt: _retry, ...row }: typeof packagingDocuments.$inferSelect, userId: string) => ({ ...row, canManage: ownerId === userId });
+const access = (userId: string) => or(eq(packagingDocuments.ownerId, userId),
+  inArray(packagingDocuments.sharedTeamId, teamsForUser(userId)));
 let activeUploads = 0;
 
 router.use(base, (req, res, next) => {
@@ -30,9 +34,9 @@ router.get(base, async (req, res): Promise<void> => {
     const [batch] = await db.select({ id: packagingBatches.id }).from(packagingBatches).where(eq(packagingBatches.id, params.data.batchId));
     if (!batch) { res.status(404).json({ error: "Batch not found." }); return; }
     const rows = await db.select().from(packagingDocuments).where(and(
-      eq(packagingDocuments.batchId, params.data.batchId), eq(packagingDocuments.ownerId, req.user!.id),
+      eq(packagingDocuments.batchId, params.data.batchId), access(req.user!.id),
     )).orderBy(desc(packagingDocuments.createdAt));
-    res.json(ListPackagingDocumentsResponse.parse(rows.map(serialize)));
+    res.json(ListPackagingDocumentsResponse.parse(rows.map(row => serialize(row, req.user!.id))));
   } catch {
     req.log.error("Unable to list packaging documents");
     res.status(503).json({ error: "Documents could not be loaded. Please retry." });
@@ -80,7 +84,7 @@ router.post(base, (req, res, next) => {
       objectPath: `/objects/packaging/${id}`,
     }).returning();
     persisted = true;
-    res.status(201).json(UploadPackagingDocumentResponse.parse(serialize(row)));
+    res.status(201).json(UploadPackagingDocumentResponse.parse(serialize(row, req.user!.id)));
   } catch {
     if (savedFile && !persisted) await savedFile.delete({ ignoreNotFound: true }).catch(() => req.log.error("Unable to remove unattached packaging upload"));
     req.log.error("Packaging document upload failed");
@@ -95,7 +99,7 @@ router.get(`${base}/:documentId/download`, async (req, res): Promise<void> => {
     const [row] = await db.select().from(packagingDocuments).where(and(
       eq(packagingDocuments.id, params.data.documentId),
       eq(packagingDocuments.batchId, params.data.batchId),
-      eq(packagingDocuments.ownerId, req.user!.id),
+      access(req.user!.id),
     ));
     if (!row) { res.status(404).json({ error: "Document not found or unavailable to this account." }); return; }
     if (row.scanStatus !== "clean" || !row.scanSha256) {
@@ -114,6 +118,27 @@ router.get(`${base}/:documentId/download`, async (req, res): Promise<void> => {
   } catch {
     req.log.error("Packaging document unavailable");
     res.status(503).json({ error: "Document is currently unavailable. Please retry." });
+  }
+});
+
+router.patch(`${base}/:documentId/sharing`, async (req, res) => {
+  try {
+    if (req.get("sec-fetch-site") === "cross-site" || (req.get("origin") && new URL(req.get("origin")!).host !== req.get("host"))) {
+      res.status(403).json({ error: "Use this application's page." }); return;
+    }
+    const input = UpdateEvidenceSharingBody.safeParse(req.body);
+    if (!input.success) { res.status(400).json({ error: "Choose a team or private access." }); return; }
+    if (input.data.sharedTeamId && !(await teamsForUser(req.user!.id)).some(t => t.id === input.data.sharedTeamId)) {
+      res.status(403).json({ error: "You must belong to the selected team." }); return;
+    }
+    const [row] = await db.update(packagingDocuments).set(input.data).where(and(
+      eq(packagingDocuments.id, req.params.documentId), eq(packagingDocuments.batchId, req.params.batchId),
+      eq(packagingDocuments.ownerId, req.user!.id),
+    )).returning();
+    if (!row) { res.status(404).json({ error: "Document not found or you are not its uploader." }); return; }
+    res.json(serialize(row, req.user!.id));
+  } catch {
+    res.status(503).json({ error: "Sharing could not be updated. Please retry." });
   }
 });
 

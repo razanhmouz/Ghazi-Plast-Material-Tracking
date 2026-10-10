@@ -11,6 +11,57 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /packaging/teams:
+    get:
+      operationId: listEvidenceTeams
+      responses:
+        "200":
+          description: Teams approved for the current account
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/EvidenceTeam" } }
+    post:
+      operationId: createEvidenceTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EvidenceTeamInput" }
+      responses:
+        "201":
+          description: Owner-managed team created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EvidenceTeam" }
+  /packaging/teams/{teamId}/members/{userId}:
+    parameters:
+      - { name: teamId, in: path, required: true, schema: { type: string } }
+      - { name: userId, in: path, required: true, schema: { type: string } }
+    put:
+      operationId: approveEvidenceMember
+      responses:
+        "204": { description: Member approved by team owner }
+    delete:
+      operationId: revokeEvidenceMember
+      responses:
+        "204": { description: Membership revoked by team owner }
+  /packaging/batches/{batchId}/documents/{documentId}/sharing:
+    parameters:
+      - { name: batchId, in: path, required: true, schema: { type: string } }
+      - { name: documentId, in: path, required: true, schema: { type: string } }
+    patch:
+      operationId: updateEvidenceSharing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EvidenceSharingInput" }
+      responses:
+        "200":
+          description: Sharing updated by uploader
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PackagingDocument" }
   /auth/user:
     get:
       operationId: getCurrentAuthUser
@@ -112,7 +163,7 @@ paths:
             application/octet-stream:
               schema: { type: string, format: binary }
         "401": { description: Login required }
-        "404": { description: Document not found or not owned by this user }
+        "404": { description: Document not found or unavailable to this user }
         "423": { description: Quarantined pending a successful malware scan }
         "503": { description: Download unavailable }
   /packaging/batches:
@@ -313,18 +364,38 @@ components:
         redirect_uri: { type: string, minLength: 1, format: uri }
         state: { type: string, minLength: 1 }
         nonce: { type: string, minLength: 1 }
+    EvidenceTeamInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+    EvidenceSharingInput:
+      type: object
+      required: [sharedTeamId]
+      properties:
+        sharedTeamId: { type: [string, "null"] }
+    EvidenceTeam:
+      type: object
+      required: [id, name, isOwner, members]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        isOwner: { type: boolean }
+        members: { type: array, items: { type: string } }
     PackagingDocument:
       type: object
-      required: [id, batchId, kind, name, contentType, size, createdAt, scanStatus, scannedAt]
+      required: [id, batchId, kind, name, contentType, size, createdAt, sharedTeamId, canManage, scanStatus, scannedAt]
       properties:
+        scanStatus: { type: string, enum: [pending, clean, rejected, scan_error] }
+        scannedAt: { type: [string, "null"], format: date-time }
+        sharedTeamId: { type: [string, "null"] }
+        canManage: { type: boolean }
         id: { type: string }
         batchId: { type: string }
         kind: { type: string, enum: [supplier_declaration, migration_report, inspection_report] }
         name: { type: string }
         contentType: { type: string }
         size: { type: integer }
-        scanStatus: { type: string, enum: [pending, clean, rejected, scan_error] }
-        scannedAt: { type: [string, "null"], format: date-time }
         createdAt: { type: string, format: date-time }
     PackagingBatchInput:
       type: object

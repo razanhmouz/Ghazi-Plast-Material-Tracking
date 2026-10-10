@@ -23,6 +23,9 @@ import type {
   AuthUserEnvelope,
   BeginBrowserLoginParams,
   DestinationInput,
+  EvidenceSharingInput,
+  EvidenceTeam,
+  EvidenceTeamInput,
   ExchangeMobileAuthorizationCode200,
   GetTraceParams,
   HealthStatus,
@@ -66,6 +69,384 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getListEvidenceTeamsUrl = () => {
+
+
+
+
+  return `/api/packaging/teams`
+}
+
+export const listEvidenceTeams = async ( options?: Parameters<typeof customFetch>[1]): Promise<EvidenceTeam[]> => {
+
+  return customFetch<EvidenceTeam[]>(getListEvidenceTeamsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEvidenceTeamsQueryKey = () => {
+    return [
+    `/api/packaging/teams`
+    ] as const;
+    }
+
+
+export const getListEvidenceTeamsQueryOptions = <TData = Awaited<ReturnType<typeof listEvidenceTeams>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvidenceTeams>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEvidenceTeamsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvidenceTeams>>> = ({ signal }) => listEvidenceTeams({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEvidenceTeams>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEvidenceTeamsQueryResult = NonNullable<Awaited<ReturnType<typeof listEvidenceTeams>>>
+export type ListEvidenceTeamsQueryError = ErrorType<unknown>
+
+
+
+export function useListEvidenceTeams<TData = Awaited<ReturnType<typeof listEvidenceTeams>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvidenceTeams>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEvidenceTeamsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateEvidenceTeamUrl = () => {
+
+
+
+
+  return `/api/packaging/teams`
+}
+
+export const createEvidenceTeam = async (evidenceTeamInput: EvidenceTeamInput, options?: Parameters<typeof customFetch>[1]): Promise<EvidenceTeam> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<EvidenceTeam>(getCreateEvidenceTeamUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(evidenceTeamInput)
+  }
+);}
+
+
+
+
+
+export const getCreateEvidenceTeamMutationKey = () => ['createEvidenceTeam'] as const;
+
+export const getCreateEvidenceTeamMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEvidenceTeam>>, TError,CreateEvidenceTeamMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createEvidenceTeam>>, TError,CreateEvidenceTeamMutationVariables, TContext> => {
+
+const mutationKey = getCreateEvidenceTeamMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEvidenceTeam>>, CreateEvidenceTeamMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createEvidenceTeam(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateEvidenceTeamMutationResult = NonNullable<Awaited<ReturnType<typeof createEvidenceTeam>>>
+    export type CreateEvidenceTeamMutationBody = BodyType<EvidenceTeamInput>
+    export type CreateEvidenceTeamMutationError = ErrorType<unknown>
+    export type CreateEvidenceTeamMutationVariables = {data: BodyType<EvidenceTeamInput>}
+
+    export const useCreateEvidenceTeam = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEvidenceTeam>>, TError,CreateEvidenceTeamMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createEvidenceTeam>>,
+        TError,
+        CreateEvidenceTeamMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateEvidenceTeamMutationOptions(options));
+    }
+
+export const getApproveEvidenceMemberUrl = (teamId: string,
+    userId: string,) => {
+
+
+
+
+  return `/api/packaging/teams/${teamId}/members/${userId}`
+}
+
+export const approveEvidenceMember = async (teamId: string,
+    userId: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getApproveEvidenceMemberUrl(teamId,userId),
+  {
+    ...options,
+    method: 'PUT'
+
+
+  }
+);}
+
+
+
+
+
+export const getApproveEvidenceMemberMutationKey = () => ['approveEvidenceMember'] as const;
+
+export const getApproveEvidenceMemberMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveEvidenceMember>>, TError,ApproveEvidenceMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approveEvidenceMember>>, TError,ApproveEvidenceMemberMutationVariables, TContext> => {
+
+const mutationKey = getApproveEvidenceMemberMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveEvidenceMember>>, ApproveEvidenceMemberMutationVariables> = (props) => {
+          const {teamId,userId} = props ?? {};
+
+          return  approveEvidenceMember(teamId,userId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveEvidenceMemberMutationResult = NonNullable<Awaited<ReturnType<typeof approveEvidenceMember>>>
+
+    export type ApproveEvidenceMemberMutationError = ErrorType<unknown>
+    export type ApproveEvidenceMemberMutationVariables = {teamId: string;userId: string}
+
+    export const useApproveEvidenceMember = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveEvidenceMember>>, TError,ApproveEvidenceMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof approveEvidenceMember>>,
+        TError,
+        ApproveEvidenceMemberMutationVariables,
+        TContext
+      > => {
+      return useMutation(getApproveEvidenceMemberMutationOptions(options));
+    }
+
+export const getRevokeEvidenceMemberUrl = (teamId: string,
+    userId: string,) => {
+
+
+
+
+  return `/api/packaging/teams/${teamId}/members/${userId}`
+}
+
+export const revokeEvidenceMember = async (teamId: string,
+    userId: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getRevokeEvidenceMemberUrl(teamId,userId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRevokeEvidenceMemberMutationKey = () => ['revokeEvidenceMember'] as const;
+
+export const getRevokeEvidenceMemberMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof revokeEvidenceMember>>, TError,RevokeEvidenceMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof revokeEvidenceMember>>, TError,RevokeEvidenceMemberMutationVariables, TContext> => {
+
+const mutationKey = getRevokeEvidenceMemberMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof revokeEvidenceMember>>, RevokeEvidenceMemberMutationVariables> = (props) => {
+          const {teamId,userId} = props ?? {};
+
+          return  revokeEvidenceMember(teamId,userId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RevokeEvidenceMemberMutationResult = NonNullable<Awaited<ReturnType<typeof revokeEvidenceMember>>>
+
+    export type RevokeEvidenceMemberMutationError = ErrorType<unknown>
+    export type RevokeEvidenceMemberMutationVariables = {teamId: string;userId: string}
+
+    export const useRevokeEvidenceMember = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof revokeEvidenceMember>>, TError,RevokeEvidenceMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof revokeEvidenceMember>>,
+        TError,
+        RevokeEvidenceMemberMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRevokeEvidenceMemberMutationOptions(options));
+    }
+
+export const getUpdateEvidenceSharingUrl = (batchId: string,
+    documentId: string,) => {
+
+
+
+
+  return `/api/packaging/batches/${batchId}/documents/${documentId}/sharing`
+}
+
+export const updateEvidenceSharing = async (batchId: string,
+    documentId: string,
+    evidenceSharingInput: EvidenceSharingInput, options?: Parameters<typeof customFetch>[1]): Promise<PackagingDocument> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PackagingDocument>(getUpdateEvidenceSharingUrl(batchId,documentId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(evidenceSharingInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateEvidenceSharingMutationKey = () => ['updateEvidenceSharing'] as const;
+
+export const getUpdateEvidenceSharingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEvidenceSharing>>, TError,UpdateEvidenceSharingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateEvidenceSharing>>, TError,UpdateEvidenceSharingMutationVariables, TContext> => {
+
+const mutationKey = getUpdateEvidenceSharingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateEvidenceSharing>>, UpdateEvidenceSharingMutationVariables> = (props) => {
+          const {batchId,documentId,data} = props ?? {};
+
+          return  updateEvidenceSharing(batchId,documentId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateEvidenceSharingMutationResult = NonNullable<Awaited<ReturnType<typeof updateEvidenceSharing>>>
+    export type UpdateEvidenceSharingMutationBody = BodyType<EvidenceSharingInput>
+    export type UpdateEvidenceSharingMutationError = ErrorType<unknown>
+    export type UpdateEvidenceSharingMutationVariables = {batchId: string;documentId: string;data: BodyType<EvidenceSharingInput>}
+
+    export const useUpdateEvidenceSharing = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEvidenceSharing>>, TError,UpdateEvidenceSharingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateEvidenceSharing>>,
+        TError,
+        UpdateEvidenceSharingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateEvidenceSharingMutationOptions(options));
+    }
 
 export const getGetCurrentAuthUserUrl = () => {
 

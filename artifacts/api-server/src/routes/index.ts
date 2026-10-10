@@ -5,6 +5,7 @@ import qualityActionsRouter from "./quality-actions";
 import packagingRouter from "./packaging";
 import authRouter from "./auth";
 import packagingDocumentsRouter from "./packaging-documents";
+import packagingTeamsRouter from "./packaging-teams";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(qualityActionsRouter);
 router.use(packagingRouter);
 router.use(authRouter);
 router.use(packagingDocumentsRouter);
+router.use(packagingTeamsRouter);
 
 export default router;

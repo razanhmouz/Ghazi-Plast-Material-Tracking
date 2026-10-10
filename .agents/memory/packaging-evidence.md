@@ -2,11 +2,11 @@
 name: Packaging evidence access
 description: Privacy and validation decisions for batch-linked evidence files.
 ---
-Evidence files are private to the signed-in uploader; public/shared registry access must not grant file access.
+Evidence uploads start private. Sharing is opt-in to owner-managed evidence teams; public/shared registry access must never grant file access.
 
-**Why:** The existing registry is a shared demo with no staff membership or organization authorization model. Treating any signed-in visitor as staff would expose supplier documents.
+**Why:** The registry is a shared demo, not a trusted company directory. A self-created team is a sharing group, not proof of employment or company-wide authority.
 
-**How to apply:** Preserve uploader-scoped access until explicit staff membership and sharing rules are implemented. Keep authentication changes out of the original dashboard.
+**How to apply:** Team owners approve known account IDs; membership permits reading only documents explicitly shared with that team, never all documents attached to a public batch. Only uploaders change sharing. Keep authentication changes out of the original dashboard.
 
 For bounded evidence files, uploads go through the API for validation before storage rather than returning reusable signed PUT URLs.
 

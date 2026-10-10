@@ -9,14 +9,17 @@ import type { PackagingDocumentKind } from './packagingDocumentKind';
 import type { PackagingDocumentScanStatus } from './packagingDocumentScanStatus';
 
 export interface PackagingDocument {
+  scanStatus: PackagingDocumentScanStatus;
+  /** @nullable */
+  scannedAt: Date | null;
+  /** @nullable */
+  sharedTeamId: string | null;
+  canManage: boolean;
   id: string;
   batchId: string;
   kind: PackagingDocumentKind;
   name: string;
   contentType: string;
   size: number;
-  scanStatus: PackagingDocumentScanStatus;
-  /** @nullable */
-  scannedAt: Date | null;
   createdAt: Date;
 }

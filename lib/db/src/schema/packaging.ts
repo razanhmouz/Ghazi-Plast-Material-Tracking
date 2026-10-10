@@ -1,4 +1,5 @@
 import { pgTable, text, boolean, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
+import { packagingTeams } from "./packaging-teams";
 
 export const packagingBatches = pgTable("packaging_batches", {
   id: text("id").primaryKey(),
@@ -32,6 +33,7 @@ export const packagingDocuments = pgTable("packaging_documents", {
   id: text("id").primaryKey(),
   batchId: text("batch_id").notNull().references(() => packagingBatches.id),
   ownerId: text("owner_id").notNull(),
+  sharedTeamId: text("shared_team_id").references(() => packagingTeams.id),
   kind: text("kind").notNull(),
   name: text("name").notNull(),
   contentType: text("content_type").notNull(),

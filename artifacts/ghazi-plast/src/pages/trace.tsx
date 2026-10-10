@@ -209,7 +209,7 @@ export default function TracePage() {
                   <DistView runs={runs} />
                 </TabsContent>
               </Tabs>
-              <DestinationOverview runs={runs} materials={materials} />
+              <DestinationOverview runs={runs} />
             </div>
             <QualityDecisionPanel runs={runs} />
           </>
@@ -221,7 +221,7 @@ export default function TracePage() {
   );
 }
 
-function DestinationOverview({ runs, materials }: { runs: Run[]; materials: Material[] }) {
+function DestinationOverview({ runs }: { runs: Run[] }) {
   const rows = useMemo(() => {
     const map = new Map<string, { name: string; type: string; total: number }>();
     for (const r of runs) for (const d of r.destinations) {
@@ -259,7 +259,6 @@ function DestinationOverview({ runs, materials }: { runs: Run[]; materials: Mate
       </div>
       <div className="border-t bg-background/60 p-3 font-mono text-[11px] leading-relaxed text-muted-foreground" data-testid="text-trace-summary">
         <div className="micro !text-[10px] mb-1">Read-only trace summary</div>
-        <div><span className="text-primary">materials</span> {materials.map((m) => m.id).join(", ") || "none"}</div>
         <div><span className="text-primary">batches</span>&nbsp;&nbsp; {runs.map((r) => r.id).join(", ") || "none"}</div>
         <div><span className="text-primary">produced</span>&nbsp; {fmt(produced)} cups</div>
         <div><span className="text-primary">allocated</span> {fmt(allocated)} cups{produced !== allocated && <span className="text-destructive"> · {fmt(Math.abs(produced - allocated))} {produced > allocated ? "unaccounted" : "over"}</span>}</div>

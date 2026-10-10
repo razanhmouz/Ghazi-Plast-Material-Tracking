@@ -5,6 +5,12 @@ import type { PackagingDocument } from "@workspace/api-client-react";
 
 const labels = { supplier_declaration: "Supplier declaration / certificate", migration_report: "Migration test report", inspection_report: "Inspection report" };
 type Kind = keyof typeof labels;
+const scanLabels = {
+  pending: "Pending malware scan — quarantined",
+  clean: "Malware scan passed — certification unverified",
+  rejected: "Rejected by malware scan — download blocked (unsafe or unscannable file)",
+  scan_error: "Scan error — quarantined; retrying automatically",
+};
 const api = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api`;
 async function checked(response: Response) {
   if (!response.ok) {
@@ -26,7 +32,7 @@ export function PackagingDocuments({ batchId }: { batchId: string }) {
   const endpoint = `${api}/packaging/batches/${encodeURIComponent(batchId)}/documents`;
   const key = ["packaging-documents", batchId, user?.id];
   const documents = useQuery<PackagingDocument[]>({
-    queryKey: key, enabled: isAuthenticated, staleTime: 0, refetchInterval: 30000,
+    queryKey: key, enabled: isAuthenticated, staleTime: 0, refetchInterval: 5000,
     queryFn: async () => (await checked(await fetch(endpoint, { credentials: "include" }))).json(),
   });
   const upload = async () => {
@@ -43,7 +49,7 @@ export function PackagingDocuments({ batchId }: { batchId: string }) {
       }));
       setFile(null); if (input.current) input.current.value = "";
       await qc.invalidateQueries({ queryKey: key });
-      setMessage("Evidence uploaded. Certification and batch status have not changed.");
+      setMessage("Evidence uploaded into quarantine. Download becomes available only after a successful malware scan. Certification and batch status have not changed.");
     } catch (e) { setError(e instanceof Error ? e.message : "Upload failed. Please retry."); }
     finally { setBusy(false); }
   };
@@ -61,7 +67,7 @@ export function PackagingDocuments({ batchId }: { batchId: string }) {
   const returnTo = `${window.location.pathname}?documentBatch=${encodeURIComponent(batchId)}`;
   return <section aria-label="Batch evidence documents">
     <h3>Evidence files</h3>
-    <p>Uploaded evidence is not verified certification or confirmation of food-contact suitability. Files are not malware-scanned.</p>
+    <p>Evidence is quarantined until malware scanning succeeds. A passed scan does not verify certification, food-contact suitability, or guarantee that a file is safe.</p>
     {isLoading ? <p>Checking document access…</p> : !isAuthenticated ?
       <a className="ptc-btn" href={`${api}/login?returnTo=${encodeURIComponent(returnTo)}`}>Log in to upload or download your evidence</a> :
       <>
@@ -71,7 +77,8 @@ export function PackagingDocuments({ batchId }: { batchId: string }) {
           documents.data?.length ? <ul style={{ paddingLeft: 20 }}>{documents.data.map(doc => <li key={doc.id} style={{ marginBottom: 12, overflowWrap: "anywhere" }}>
             <strong>{doc.name}</strong> — {labels[doc.kind]}<br/>
             <small>{(doc.size / 1024).toFixed(1)} KiB · {new Date(doc.createdAt).toLocaleString()} · Uploaded, unverified</small>{" "}
-            <button className="ptc-btn" disabled={busy} onClick={() => void download(doc)}>Download</button>
+            <span role="status">{scanLabels[doc.scanStatus] ?? "Quarantined — scan status unavailable"}</span>{" "}
+            <button className="ptc-btn" disabled={busy || doc.scanStatus !== "clean"} onClick={() => void download(doc)}>Download</button>
           </li>)}</ul> : <p>No files uploaded by your account for this batch.</p>}
         <fieldset disabled={busy}>
           <label className="ptc-field">Document category<select value={kind} onChange={e => setKind(e.target.value as Kind)}>{Object.entries(labels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>

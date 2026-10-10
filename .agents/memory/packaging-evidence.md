@@ -13,3 +13,9 @@ For bounded evidence files, uploads go through the API for validation before sto
 **Why:** This permits server-side size and format checks before persistence and prevents a still-valid PUT URL from replacing an already-validated document.
 
 **How to apply:** Keep uploads bounded; file-signature validation is not malware scanning or certification verification. Uploads must never automatically alter recorded quality or release decisions.
+
+Malware scanning uses local ClamAV rather than sending evidence to a public scanning service. Scanner failures must leave evidence quarantined.
+
+**Why:** Supplier evidence may be confidential, and a scanner outage must not silently grant access to unscanned files.
+
+**How to apply:** Preserve fail-closed download checks, use private storage, and treat malware detection separately from certification verification. Any future remote scanning provider requires an explicit privacy decision.

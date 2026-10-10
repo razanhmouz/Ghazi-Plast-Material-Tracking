@@ -9,11 +9,12 @@ import {
 } from "@workspace/api-zod";
 import { objectStorageClient, ObjectStorageService } from "../lib/objectStorage";
 import { MAX_DOCUMENT_BYTES, validateDocument } from "../lib/packaging-file-validation";
+import { evidenceDigest, readEvidence } from "../lib/packaging-scan-worker";
 
 const router: IRouter = Router();
 const base = "/packaging/batches/:batchId/documents";
 const storage = new ObjectStorageService();
-const serialize = ({ ownerId: _owner, objectPath: _path, ...row }: typeof packagingDocuments.$inferSelect) => row;
+const serialize = ({ ownerId: _owner, objectPath: _path, scanSha256: _hash, scanRetryAt: _retry, ...row }: typeof packagingDocuments.$inferSelect) => row;
 let activeUploads = 0;
 
 router.use(base, (req, res, next) => {
@@ -97,19 +98,19 @@ router.get(`${base}/:documentId/download`, async (req, res): Promise<void> => {
       eq(packagingDocuments.ownerId, req.user!.id),
     ));
     if (!row) { res.status(404).json({ error: "Document not found or unavailable to this account." }); return; }
-    const file = await storage.getObjectEntityFile(row.objectPath);
+    if (row.scanStatus !== "clean" || !row.scanSha256) {
+      res.status(423).json({ error: "Evidence is quarantined. Downloads require a successful malware scan." }); return;
+    }
+    const bytes = await readEvidence(row.objectPath);
+    if (evidenceDigest(bytes) !== row.scanSha256) {
+      await db.update(packagingDocuments).set({ scanStatus: "pending", scanSha256: null, scannedAt: null, scanRetryAt: new Date() }).where(eq(packagingDocuments.id, row.id));
+      res.status(423).json({ error: "Evidence changed since scanning and has been quarantined again." }); return;
+    }
     res.attachment(row.name);
     res.setHeader("Content-Type", row.contentType);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "sandbox");
-    const stream = file.createReadStream();
-    stream.on("error", () => {
-      req.log.error("Packaging document stream failed");
-      if (!res.headersSent) res.status(503).json({ error: "Download failed. Please retry." });
-      else res.destroy();
-    });
-    res.on("close", () => stream.destroy());
-    stream.pipe(res);
+    res.send(bytes);
   } catch {
     req.log.error("Packaging document unavailable");
     res.status(503).json({ error: "Document is currently unavailable. Please retry." });

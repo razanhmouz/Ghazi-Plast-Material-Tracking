@@ -113,6 +113,7 @@ paths:
               schema: { type: string, format: binary }
         "401": { description: Login required }
         "404": { description: Document not found or not owned by this user }
+        "423": { description: Quarantined pending a successful malware scan }
         "503": { description: Download unavailable }
   /packaging/batches:
     get:
@@ -314,7 +315,7 @@ components:
         nonce: { type: string, minLength: 1 }
     PackagingDocument:
       type: object
-      required: [id, batchId, kind, name, contentType, size, createdAt]
+      required: [id, batchId, kind, name, contentType, size, createdAt, scanStatus, scannedAt]
       properties:
         id: { type: string }
         batchId: { type: string }
@@ -322,6 +323,8 @@ components:
         name: { type: string }
         contentType: { type: string }
         size: { type: integer }
+        scanStatus: { type: string, enum: [pending, clean, rejected, scan_error] }
+        scannedAt: { type: [string, "null"], format: date-time }
         createdAt: { type: string, format: date-time }
     PackagingBatchInput:
       type: object

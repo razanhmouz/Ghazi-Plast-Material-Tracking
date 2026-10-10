@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PackagingDocumentKind } from './packagingDocumentKind';
+import type { PackagingDocumentScanStatus } from './packagingDocumentScanStatus';
 
 export interface PackagingDocument {
   id: string;
@@ -14,5 +15,8 @@ export interface PackagingDocument {
   name: string;
   contentType: string;
   size: number;
+  scanStatus: PackagingDocumentScanStatus;
+  /** @nullable */
+  scannedAt: Date | null;
   createdAt: Date;
 }

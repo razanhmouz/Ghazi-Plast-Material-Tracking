@@ -32,6 +32,7 @@ export * from './packagingBatchInputStatus';
 export * from './packagingBatchInputUnit';
 export * from './packagingDocument';
 export * from './packagingDocumentKind';
+export * from './packagingDocumentScanStatus';
 export * from './packagingSearchInput';
 export * from './packagingSearchResult';
 export * from './qualityAction';

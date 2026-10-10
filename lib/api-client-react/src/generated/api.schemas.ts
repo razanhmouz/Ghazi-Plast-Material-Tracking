@@ -77,6 +77,16 @@ export const PackagingDocumentKind = {
   inspection_report: 'inspection_report',
 } as const;
 
+export type PackagingDocumentScanStatus = typeof PackagingDocumentScanStatus[keyof typeof PackagingDocumentScanStatus];
+
+
+export const PackagingDocumentScanStatus = {
+  pending: 'pending',
+  clean: 'clean',
+  rejected: 'rejected',
+  scan_error: 'scan_error',
+} as const;
+
 export interface PackagingDocument {
   id: string;
   batchId: string;
@@ -84,6 +94,9 @@ export interface PackagingDocument {
   name: string;
   contentType: string;
   size: number;
+  scanStatus: PackagingDocumentScanStatus;
+  /** @nullable */
+  scannedAt: string | null;
   createdAt: string;
 }
 

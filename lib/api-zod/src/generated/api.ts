@@ -75,6 +75,8 @@ export const ListPackagingDocumentsResponseItem = zod.object({
   "name": zod.string(),
   "contentType": zod.string(),
   "size": zod.number().int(),
+  "scanStatus": zod.enum(['pending', 'clean', 'rejected', 'scan_error']),
+  "scannedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
 export const ListPackagingDocumentsResponse = zod.array(ListPackagingDocumentsResponseItem)
@@ -107,6 +109,8 @@ export const UploadPackagingDocumentResponse = zod.object({
   "name": zod.string(),
   "contentType": zod.string(),
   "size": zod.number().int(),
+  "scanStatus": zod.enum(['pending', 'clean', 'rejected', 'scan_error']),
+  "scannedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
 

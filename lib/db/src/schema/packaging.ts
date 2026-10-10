@@ -37,5 +37,9 @@ export const packagingDocuments = pgTable("packaging_documents", {
   contentType: text("content_type").notNull(),
   size: integer("size").notNull(),
   objectPath: text("object_path").notNull().unique(),
+  scanStatus: text("scan_status").notNull().default("pending"),
+  scannedAt: timestamp("scanned_at", { withTimezone: true }),
+  scanRetryAt: timestamp("scan_retry_at", { withTimezone: true }).notNull().defaultNow(),
+  scanSha256: text("scan_sha256"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

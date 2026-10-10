@@ -41,6 +41,7 @@ import type {
   PackagingBatchInput,
   PackagingBatchUpdate,
   PackagingDocument,
+  PackagingScannerHealth,
   PackagingSearchInput,
   PackagingSearchResult,
   QualityAction,
@@ -76,6 +77,83 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetPackagingScannerHealthUrl = (batchId: string,) => {
+
+
+
+
+  return `/api/packaging/batches/${batchId}/documents/scanner-health`
+}
+
+/**
+ * @summary Scanner availability and quarantine metadata for evidence accessible to this account
+ */
+export const getPackagingScannerHealth = async (batchId: string, options?: Parameters<typeof customFetch>[1]): Promise<PackagingScannerHealth> => {
+
+  return customFetch<PackagingScannerHealth>(getGetPackagingScannerHealthUrl(batchId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPackagingScannerHealthQueryKey = (batchId: string,) => {
+    return [
+    `/api/packaging/batches/${batchId}/documents/scanner-health`
+    ] as const;
+    }
+
+
+export const getGetPackagingScannerHealthQueryOptions = <TData = Awaited<ReturnType<typeof getPackagingScannerHealth>>, TError = ErrorType<void>>(batchId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPackagingScannerHealth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPackagingScannerHealthQueryKey(batchId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackagingScannerHealth>>> = ({ signal }) => getPackagingScannerHealth(batchId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: batchId !== null && batchId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPackagingScannerHealth>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPackagingScannerHealthQueryResult = NonNullable<Awaited<ReturnType<typeof getPackagingScannerHealth>>>
+export type GetPackagingScannerHealthQueryError = ErrorType<void>
+
+
+/**
+ * @summary Scanner availability and quarantine metadata for evidence accessible to this account
+ */
+
+export function useGetPackagingScannerHealth<TData = Awaited<ReturnType<typeof getPackagingScannerHealth>>, TError = ErrorType<void>>(
+ batchId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPackagingScannerHealth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPackagingScannerHealthQueryOptions(batchId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListEvidenceTeamAccessHistoryUrl = (teamId: string,
     params?: ListEvidenceTeamAccessHistoryParams,) => {

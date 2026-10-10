@@ -9,6 +9,39 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Scanner availability and quarantine metadata for evidence accessible to this account
+ */
+export const getPackagingScannerHealthPathBatchIdMax = 100;
+
+
+
+export const GetPackagingScannerHealthParams = zod.object({
+  "batchId": zod.coerce.string().min(1).max(getPackagingScannerHealthPathBatchIdMax)
+})
+
+export const getPackagingScannerHealthResponseConsecutiveFailuresMin = 0;
+
+export const getPackagingScannerHealthResponseQueuedMin = 0;
+
+export const getPackagingScannerHealthResponseErrorsMin = 0;
+
+
+
+export const GetPackagingScannerHealthResponse = zod.object({
+  "status": zod.enum(['healthy', 'retrying', 'outage', 'blocked', 'unknown']),
+  "definitions": zod.enum(['current', 'stale', 'missing']),
+  "definitionsCheckedAt": zod.coerce.date().nullable(),
+  "lastCheckAt": zod.coerce.date().nullable(),
+  "lastSuccessAt": zod.coerce.date().nullable(),
+  "consecutiveFailures": zod.number().int().min(getPackagingScannerHealthResponseConsecutiveFailuresMin),
+  "queued": zod.number().int().min(getPackagingScannerHealthResponseQueuedMin),
+  "errors": zod.number().int().min(getPackagingScannerHealthResponseErrorsMin),
+  "oldestQueuedAt": zod.coerce.date().nullable(),
+  "aging": zod.boolean()
+})
+
+
+/**
  * @summary Membership changes visible only to the current team owner
  */
 export const ListEvidenceTeamAccessHistoryParams = zod.object({

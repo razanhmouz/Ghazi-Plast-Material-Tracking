@@ -5,6 +5,46 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type PackagingScannerHealthStatus = typeof PackagingScannerHealthStatus[keyof typeof PackagingScannerHealthStatus];
+
+
+export const PackagingScannerHealthStatus = {
+  healthy: 'healthy',
+  retrying: 'retrying',
+  outage: 'outage',
+  blocked: 'blocked',
+  unknown: 'unknown',
+} as const;
+
+export type PackagingScannerHealthDefinitions = typeof PackagingScannerHealthDefinitions[keyof typeof PackagingScannerHealthDefinitions];
+
+
+export const PackagingScannerHealthDefinitions = {
+  current: 'current',
+  stale: 'stale',
+  missing: 'missing',
+} as const;
+
+export interface PackagingScannerHealth {
+  status: PackagingScannerHealthStatus;
+  definitions: PackagingScannerHealthDefinitions;
+  /** @nullable */
+  definitionsCheckedAt: string | null;
+  /** @nullable */
+  lastCheckAt: string | null;
+  /** @nullable */
+  lastSuccessAt: string | null;
+  /** @minimum 0 */
+  consecutiveFailures: number;
+  /** @minimum 0 */
+  queued: number;
+  /** @minimum 0 */
+  errors: number;
+  /** @nullable */
+  oldestQueuedAt: string | null;
+  aging: boolean;
+}
+
 export type PackagingAllocationUnit = typeof PackagingAllocationUnit[keyof typeof PackagingAllocationUnit];
 
 

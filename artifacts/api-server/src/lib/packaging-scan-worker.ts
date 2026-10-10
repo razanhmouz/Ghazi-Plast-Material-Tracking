@@ -3,7 +3,7 @@ import { and, eq, inArray, lte } from "drizzle-orm";
 import { db, packagingDocuments } from "@workspace/db";
 import { ObjectStorageService } from "./objectStorage";
 import { MAX_DOCUMENT_BYTES, validateDocument } from "./packaging-file-validation";
-import { scanEvidence } from "./packaging-malware-scanner";
+import { scanEvidence, probeScannerHealth } from "./packaging-malware-scanner";
 import { logger } from "./logger";
 
 const storage = new ObjectStorageService();
@@ -53,11 +53,15 @@ export async function scanPendingEvidence() {
       scanRetryAt: new Date(Date.now() + 5 * 60 * 1000),
     }).where(and(eq(packagingDocuments.id, row.id), eq(packagingDocuments.scanRetryAt, row.scanRetryAt)));
     if (status === "scan_error") logger.warn({ documentId: row.id }, "Evidence scan failed; quarantined and scheduled for retry");
-  } catch { logger.error("Evidence scan worker failed; quarantine retained"); }
+  } catch {
+    logger.error("Evidence scan worker failed; quarantine retained");
+  }
   finally { running = false; }
 }
 
 export function startEvidenceScanner() {
+  void probeScannerHealth();
+  setInterval(() => void probeScannerHealth(), 5 * 60 * 1000).unref();
   void scanPendingEvidence();
   setInterval(() => void scanPendingEvidence(), 5000).unref();
 }

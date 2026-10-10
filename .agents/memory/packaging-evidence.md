@@ -25,3 +25,15 @@ Malware scanning uses local ClamAV rather than sending evidence to a public scan
 **Why:** Supplier evidence may be confidential, and a scanner outage must not silently grant access to unscanned files.
 
 **How to apply:** Preserve fail-closed download checks, use private storage, and treat malware detection separately from certification verification. Any future remote scanning provider requires an explicit privacy decision.
+
+Scanner-health visibility follows signed-in evidence access, not a newly inferred staff or company role. Queue statistics must be scoped to the requesting account's accessible files.
+
+**Why:** There is no verified staff directory, and even aggregate quarantine counts could reveal other accounts' private activity. Availability checks can be shared because they contain no evidence metadata.
+
+**How to apply:** Keep operational probes content-free and separate from document verdicts. Do not turn a healthy probe into permission to download or expose global evidence counts.
+
+Document-derived failure streaks are private activity too, even without filenames or content. Do not merge them into shared scanner-health status or counters.
+
+**Why:** An unrelated signed-in account could infer another account's failed scans and recovery by polling shared status.
+
+**How to apply:** Derive shared availability exclusively from fixed content-free probes; apply document access controls to every document-derived count and incident indicator.

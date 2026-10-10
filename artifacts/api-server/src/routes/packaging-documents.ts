@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import express, { Router, type IRouter } from "express";
-import { and, desc, eq, inArray, or } from "drizzle-orm";
+import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { teamsForUser } from "./packaging-teams";
 import { db, packagingBatches, packagingDocuments, packagingAccessHistory } from "@workspace/db";
 import { accessHistory, historyCursor } from "../lib/evidence-access-history";
@@ -9,10 +9,13 @@ import {
   UploadPackagingDocumentParams, UploadPackagingDocumentHeader, UploadPackagingDocumentResponse,
   DownloadPackagingDocumentParams,
   UpdateEvidenceSharingBody,
+  GetPackagingScannerHealthParams, GetPackagingScannerHealthResponse,
 } from "@workspace/api-zod";
 import { objectStorageClient, ObjectStorageService } from "../lib/objectStorage";
 import { MAX_DOCUMENT_BYTES, validateDocument } from "../lib/packaging-file-validation";
 import { evidenceDigest, readEvidence } from "../lib/packaging-scan-worker";
+import { getScannerHealth } from "../lib/packaging-malware-scanner";
+import { MINUTE } from "../lib/packaging-scanner-health";
 
 const router: IRouter = Router();
 const base = "/packaging/batches/:batchId/documents";
@@ -29,7 +32,7 @@ router.use(base, (req, res, next) => {
 });
 
 router.get(base, async (req, res): Promise<void> => {
-  const params = ListPackagingDocumentsParams.safeParse(req.params);
+  const params = DownloadPackagingDocumentParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid batch." }); return; }
   try {
     const [batch] = await db.select({ id: packagingBatches.id }).from(packagingBatches).where(eq(packagingBatches.id, params.data.batchId));
@@ -41,6 +44,32 @@ router.get(base, async (req, res): Promise<void> => {
   } catch {
     req.log.error("Unable to list packaging documents");
     res.status(503).json({ error: "Documents could not be loaded. Please retry." });
+  }
+});
+
+router.get(`${base}/scanner-health`, async (req, res): Promise<void> => {
+  const params = DownloadPackagingDocumentParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid batch." }); return; }
+  try {
+    const [queue] = await db.select({
+      queued: sql<number>`count(*)::int`,
+      errors: sql<number>`count(*) filter (where ${packagingDocuments.scanStatus} = 'scan_error')::int`,
+      oldest: sql<string | null>`min(${packagingDocuments.createdAt})`,
+    }).from(packagingDocuments).where(and(
+      eq(packagingDocuments.batchId, params.data.batchId), access(req.user!.id),
+      inArray(packagingDocuments.scanStatus, ["pending", "scan_error"]),
+    ));
+    const health = await getScannerHealth();
+    // Shared health comes ONLY from the fixed probe. Document-derived state,
+    // including failure counts, must stay inside the access-scoped aggregate.
+    res.json(GetPackagingScannerHealthResponse.parse({
+      ...health,
+      queued: queue.queued, errors: queue.errors,
+      oldestQueuedAt: queue.oldest ? new Date(queue.oldest).toISOString() : null,
+      aging: queue.oldest !== null && Date.now() - new Date(queue.oldest).getTime() >= 30 * MINUTE,
+    }));
+  } catch {
+    res.status(503).json({ error: "Scanner health is unavailable. Quarantine remains enforced; ask the operator to check the API and database." });
   }
 });
 
@@ -61,7 +90,7 @@ router.post(base, (req, res, next) => {
     next();
   });
 }, async (req, res): Promise<void> => {
-  const params = UploadPackagingDocumentParams.safeParse(req.params);
+  const params = DownloadPackagingDocumentParams.safeParse(req.params);
   const headers = UploadPackagingDocumentHeader.safeParse(req.headers);
   let name = "";
   try { name = decodeURIComponent(String(req.get("x-document-name") ?? "")).trim(); } catch { /* Invalid encoding is rejected below. */ }
@@ -79,11 +108,11 @@ router.post(base, (req, res, next) => {
     const [bucket, ...parts] = path.replace(/^\//, "").split("/");
     savedFile = objectStorageClient.bucket(bucket).file(parts.join("/"));
     await savedFile.save(req.body, { resumable: false, metadata: { contentType } });
-    const [row] = await db.insert(packagingDocuments).values({
-      id, batchId: params.data.batchId, ownerId: req.user!.id,
-      kind: headers.data["x-document-kind"], name, contentType, size: req.body.length,
-      objectPath: `/objects/packaging/${id}`,
-    }).returning();
+    const [row] = await db.select().from(packagingDocuments).where(and(
+      eq(packagingDocuments.id, params.data.documentId),
+      eq(packagingDocuments.batchId, params.data.batchId),
+      access(req.user!.id),
+    ));
     persisted = true;
     res.status(201).json(UploadPackagingDocumentResponse.parse(serialize(row, req.user!.id)));
   } catch {

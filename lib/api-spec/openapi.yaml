@@ -11,6 +11,21 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /packaging/batches/{batchId}/documents/scanner-health:
+    get:
+      operationId: getPackagingScannerHealth
+      summary: Scanner availability and quarantine metadata for evidence accessible to this account
+      parameters:
+        - { name: batchId, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+      responses:
+        "200":
+          description: Operational metadata only; probe history is since this server started
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PackagingScannerHealth" }
+        "400": { description: Invalid batch }
+        "401": { description: Login required }
+        "503": { description: Health could not be loaded }
   /packaging/teams/{teamId}/access-history:
     get:
       operationId: listEvidenceTeamAccessHistory
@@ -387,6 +402,20 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    PackagingScannerHealth:
+      type: object
+      required: [status, definitions, definitionsCheckedAt, lastCheckAt, lastSuccessAt, consecutiveFailures, queued, errors, oldestQueuedAt, aging]
+      properties:
+        status: { type: string, enum: [healthy, retrying, outage, blocked, unknown] }
+        definitions: { type: string, enum: [current, stale, missing] }
+        definitionsCheckedAt: { type: [string, "null"], format: date-time }
+        lastCheckAt: { type: [string, "null"], format: date-time }
+        lastSuccessAt: { type: [string, "null"], format: date-time }
+        consecutiveFailures: { type: integer, minimum: 0 }
+        queued: { type: integer, minimum: 0 }
+        errors: { type: integer, minimum: 0 }
+        oldestQueuedAt: { type: [string, "null"], format: date-time }
+        aging: { type: boolean }
     PackagingAllocationHistoryPage:
       type: object
       required: [items, nextCursor]

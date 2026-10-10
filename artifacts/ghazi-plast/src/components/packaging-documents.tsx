@@ -4,6 +4,7 @@ import { useAuth } from "@workspace/replit-auth-web";
 import type { PackagingDocument } from "@workspace/api-client-react";
 import { PackagingTeams, useEvidenceTeams } from "./packaging-teams";
 import { EvidenceAccessHistory } from "./evidence-access-history";
+import { PackagingScannerStatus } from "./packaging-scanner-health";
 
 const labels = { supplier_declaration: "Supplier declaration / certificate", migration_report: "Migration test report", inspection_report: "Inspection report" };
 type Kind = keyof typeof labels;
@@ -89,6 +90,7 @@ export function PackagingDocuments({ batchId }: { batchId: string }) {
       <>
         <p><small>Uploads start private. Only the uploader can share a file with an approved evidence team. <a href={`${api}/logout?returnTo=${encodeURIComponent(returnTo)}`}>Log out</a></small></p>
         {user && <PackagingTeams key={user.id} userId={user.id}/>}
+        {user && <PackagingScannerStatus key={`${user.id}:${batchId}`} userId={user.id} endpoint={endpoint}/>}
         {documents.isLoading ? <p>Loading documents…</p> : documents.isError ?
           <p role="alert" className="ptc-error">Documents could not be loaded. <button className="ptc-btn" onClick={() => void documents.refetch()}>Retry</button></p> :
           documents.data?.length ? <ul style={{ paddingLeft: 20 }}>{documents.data.map(doc => <li key={doc.id} style={{ marginBottom: 12, overflowWrap: "anywhere" }}>

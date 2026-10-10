@@ -231,8 +231,6 @@ function DestinationOverview({ runs }: { runs: Run[] }) {
     return [...map.values()].sort((a, b) => (a.type === b.type ? b.total - a.total : a.type === "shipped" ? -1 : 1));
   }, [runs]);
   const max = Math.max(1, ...rows.map((r) => r.total));
-  const produced = runs.reduce((s, r) => s + r.quantity, 0);
-  const allocated = rows.reduce((s, r) => s + r.total, 0);
   return (
     <aside className="panel rise overflow-hidden" data-testid="panel-destination-overview">
       <div className="px-4 py-2.5 border-b flex items-center justify-between gap-2">
@@ -256,12 +254,6 @@ function DestinationOverview({ runs }: { runs: Run[] }) {
             <div className="micro !text-[10px] mt-1">{d.type === "shipped" ? "Shipped · recall contact" : "Internal stock"}</div>
           </div>
         ))}
-      </div>
-      <div className="border-t bg-background/60 p-3 font-mono text-[11px] leading-relaxed text-muted-foreground" data-testid="text-trace-summary">
-        <div className="micro !text-[10px] mb-1">Read-only trace summary</div>
-        <div><span className="text-primary">batches</span>&nbsp;&nbsp; {runs.map((r) => r.id).join(", ") || "none"}</div>
-        <div><span className="text-primary">produced</span>&nbsp; {fmt(produced)} cups</div>
-        <div><span className="text-primary">allocated</span> {fmt(allocated)} cups{produced !== allocated && <span className="text-destructive"> · {fmt(Math.abs(produced - allocated))} {produced > allocated ? "unaccounted" : "over"}</span>}</div>
       </div>
     </aside>
   );

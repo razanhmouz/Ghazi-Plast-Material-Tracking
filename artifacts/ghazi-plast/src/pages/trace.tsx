@@ -98,7 +98,6 @@ export default function TracePage() {
 
       <main className="mx-auto max-w-7xl px-4 md:px-6 py-5 space-y-4">
         <section className="rise">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mt-1">Resin in, cups out. <span className="text-primary">Every unit accounted for.</span></h1>
           <p className="text-xs text-muted-foreground mt-1">Owner verification: read-only check of P-77 quantities and customer destinations.</p>
         </section>
 

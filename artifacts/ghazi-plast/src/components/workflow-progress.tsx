@@ -80,9 +80,6 @@ export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
           );
         })}
       </ol>
-      <p className="px-4 py-2 border-t font-mono text-[10px] text-muted-foreground">
-        Workflow guide, not a completion audit. Tracing does not change quality decisions or shipment statuses.
-      </p>
     </section>
   );
 }

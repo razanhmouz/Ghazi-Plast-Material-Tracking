@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto";
 import express, { Router, type IRouter } from "express";
 import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { teamsForUser } from "./packaging-teams";
-import { db, packagingBatches, packagingDocuments } from "@workspace/db";
+import { db, packagingBatches, packagingDocuments, packagingAccessHistory } from "@workspace/db";
+import { accessHistory, historyCursor } from "../lib/evidence-access-history";
 import {
   ListPackagingDocumentsParams, ListPackagingDocumentsResponse,
   UploadPackagingDocumentParams, UploadPackagingDocumentHeader, UploadPackagingDocumentResponse,
@@ -121,6 +122,22 @@ router.get(`${base}/:documentId/download`, async (req, res): Promise<void> => {
   }
 });
 
+router.get(`${base}/:documentId/access-history`, async (req, res) => {
+  let before: number | undefined;
+  try { before = historyCursor(req.query.before); }
+  catch { res.status(400).json({ error: "Invalid history cursor." }); return; }
+  try {
+    const [document] = await db.select({ id: packagingDocuments.id }).from(packagingDocuments).where(and(
+      eq(packagingDocuments.id, req.params.documentId), eq(packagingDocuments.batchId, req.params.batchId),
+      eq(packagingDocuments.ownerId, req.user!.id),
+    ));
+    if (!document) { res.status(404).json({ error: "Document not found or you are not its uploader." }); return; }
+    res.json(await accessHistory("documentId", document.id, before));
+  } catch {
+    res.status(503).json({ error: "Access history could not be loaded. Please retry." });
+  }
+});
+
 router.patch(`${base}/:documentId/sharing`, async (req, res) => {
   try {
     if (req.get("sec-fetch-site") === "cross-site" || (req.get("origin") && new URL(req.get("origin")!).host !== req.get("host"))) {
@@ -131,10 +148,19 @@ router.patch(`${base}/:documentId/sharing`, async (req, res) => {
     if (input.data.sharedTeamId && !(await teamsForUser(req.user!.id)).some(t => t.id === input.data.sharedTeamId)) {
       res.status(403).json({ error: "You must belong to the selected team." }); return;
     }
-    const [row] = await db.update(packagingDocuments).set(input.data).where(and(
-      eq(packagingDocuments.id, req.params.documentId), eq(packagingDocuments.batchId, req.params.batchId),
-      eq(packagingDocuments.ownerId, req.user!.id),
-    )).returning();
+    const row = await db.transaction(async tx => {
+      const [previous] = await tx.select().from(packagingDocuments).where(and(
+        eq(packagingDocuments.id, req.params.documentId), eq(packagingDocuments.batchId, req.params.batchId),
+        eq(packagingDocuments.ownerId, req.user!.id),
+      )).for("update");
+      if (!previous || previous.sharedTeamId === input.data.sharedTeamId) return previous;
+      const [updated] = await tx.update(packagingDocuments).set(input.data).where(eq(packagingDocuments.id, previous.id)).returning();
+      await tx.insert(packagingAccessHistory).values({
+        documentId: previous.id, actorId: req.user!.id, action: "sharing_changed",
+        previousTeamId: previous.sharedTeamId, nextTeamId: updated.sharedTeamId,
+      });
+      return updated;
+    });
     if (!row) { res.status(404).json({ error: "Document not found or you are not its uploader." }); return; }
     res.json(serialize(row, req.user!.id));
   } catch {

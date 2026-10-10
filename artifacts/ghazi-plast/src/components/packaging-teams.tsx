@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { EvidenceTeam } from "@workspace/api-client-react";
+import { EvidenceAccessHistory } from "./evidence-access-history";
 
 const endpoint = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/packaging/teams`;
 export async function teamRequest(path = "", method = "GET", body?: unknown) {
@@ -28,6 +29,7 @@ export function PackagingTeams({ userId }: { userId: string }) {
       await teamRequest(path, method, body);
       await qc.invalidateQueries({ queryKey: ["evidence-teams"] });
       await qc.invalidateQueries({ queryKey: ["packaging-documents"] });
+      await qc.invalidateQueries({ queryKey: ["evidence-access-history"] });
       setMember(""); setName(""); setMessage("Team permissions saved.");
     } catch (e) { setError(e instanceof Error ? e.message : "Could not update team."); }
     finally { setBusy(false); }
@@ -55,6 +57,7 @@ export function PackagingTeams({ userId }: { userId: string }) {
         {!team.members.length && <p>No approved colleagues yet.</p>}
       </>}
     </fieldset>
+    {team && <EvidenceAccessHistory key={`${userId}:${team.id}`} userId={userId} endpoint={`${endpoint}/${encodeURIComponent(team.id)}/access-history`} />}
     {error && <p role="alert" className="ptc-error">{error}</p>}
     {message && <p role="status">{message}</p>}
   </details>;

@@ -94,6 +94,34 @@ export interface MobileTokenExchangeRequest {
   nonce?: string;
 }
 
+export type EvidenceAccessChangeAction = typeof EvidenceAccessChangeAction[keyof typeof EvidenceAccessChangeAction];
+
+
+export const EvidenceAccessChangeAction = {
+  member_approved: 'member_approved',
+  member_removed: 'member_removed',
+  sharing_changed: 'sharing_changed',
+} as const;
+
+export interface EvidenceAccessChange {
+  id: number;
+  actorId: string;
+  createdAt: string;
+  action: EvidenceAccessChangeAction;
+  /** @nullable */
+  memberId: string | null;
+  /** @nullable */
+  previousTeamId: string | null;
+  /** @nullable */
+  nextTeamId: string | null;
+}
+
+export interface EvidenceAccessHistory {
+  items: EvidenceAccessChange[];
+  /** @nullable */
+  nextBefore: number | null;
+}
+
 export interface EvidenceTeamInput {
   /**
      * @minLength 1
@@ -475,6 +503,20 @@ export interface RunUpdate {
 export interface HealthStatus {
   status: string;
 }
+
+export type ListEvidenceTeamAccessHistoryParams = {
+/**
+ * @minimum 1
+ */
+before?: number;
+};
+
+export type ListEvidenceDocumentAccessHistoryParams = {
+/**
+ * @minimum 1
+ */
+before?: number;
+};
 
 export type BeginBrowserLoginParams = {
 returnTo?: string;

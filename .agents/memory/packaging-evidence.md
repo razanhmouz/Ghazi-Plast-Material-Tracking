@@ -8,6 +8,12 @@ Evidence uploads start private. Sharing is opt-in to owner-managed evidence team
 
 **How to apply:** Team owners approve known account IDs; membership permits reading only documents explicitly shared with that team, never all documents attached to a public batch. Only uploaders change sharing. Keep authentication changes out of the original dashboard.
 
+Access-history visibility follows two separate scopes: team owners see membership changes; uploaders see their documents' sharing transitions.
+
+**Why:** Sharing transitions can reveal previous or subsequent teams even after a document is made private. A team's right to read a shared file should not expose the uploader's other sharing relationships.
+
+**How to apply:** Do not grant ordinary readers access-history permission, or include document sharing transitions in a team owner's membership history without revisiting this privacy boundary.
+
 For bounded evidence files, uploads go through the API for validation before storage rather than returning reusable signed PUT URLs.
 
 **Why:** This permits server-side size and format checks before persistence and prevents a still-valid PUT URL from replacing an already-validated document.

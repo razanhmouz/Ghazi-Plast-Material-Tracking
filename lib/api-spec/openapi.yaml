@@ -11,6 +11,37 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /packaging/teams/{teamId}/access-history:
+    get:
+      operationId: listEvidenceTeamAccessHistory
+      summary: Membership changes visible only to the current team owner
+      parameters:
+        - { name: teamId, in: path, required: true, schema: { type: string } }
+        - { name: before, in: query, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Newest changes first; no inferred pre-tracking history
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EvidenceAccessHistory" }
+        "401": { description: Login required }
+        "404": { description: Team unavailable or not owned }
+  /packaging/batches/{batchId}/documents/{documentId}/access-history:
+    get:
+      operationId: listEvidenceDocumentAccessHistory
+      summary: Sharing changes visible only to the uploader
+      parameters:
+        - { name: batchId, in: path, required: true, schema: { type: string } }
+        - { name: documentId, in: path, required: true, schema: { type: string } }
+        - { name: before, in: query, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Newest changes first; no inferred pre-tracking history
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EvidenceAccessHistory" }
+        "401": { description: Login required }
+        "404": { description: Document unavailable or not uploaded by this account }
   /packaging/batches/{id}/allocation-history:
     get:
       operationId: listPackagingAllocationHistory
@@ -410,6 +441,23 @@ components:
         redirect_uri: { type: string, minLength: 1, format: uri }
         state: { type: string, minLength: 1 }
         nonce: { type: string, minLength: 1 }
+    EvidenceAccessHistory:
+      type: object
+      required: [items, nextBefore]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/EvidenceAccessChange" } }
+        nextBefore: { type: [integer, "null"] }
+    EvidenceAccessChange:
+      type: object
+      required: [id, actorId, createdAt, action, memberId, previousTeamId, nextTeamId]
+      properties:
+        id: { type: integer }
+        actorId: { type: string }
+        createdAt: { type: string, format: date-time }
+        action: { type: string, enum: [member_approved, member_removed, sharing_changed] }
+        memberId: { type: [string, "null"] }
+        previousTeamId: { type: [string, "null"] }
+        nextTeamId: { type: [string, "null"] }
     EvidenceTeamInput:
       type: object
       required: [name]

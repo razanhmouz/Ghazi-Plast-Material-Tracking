@@ -9,6 +9,63 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Membership changes visible only to the current team owner
+ */
+export const ListEvidenceTeamAccessHistoryParams = zod.object({
+  "teamId": zod.coerce.string()
+})
+
+
+
+
+export const ListEvidenceTeamAccessHistoryQueryParams = zod.object({
+  "before": zod.coerce.number().int().min(1).optional()
+})
+
+export const ListEvidenceTeamAccessHistoryResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "actorId": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "action": zod.enum(['member_approved', 'member_removed', 'sharing_changed']),
+  "memberId": zod.string().nullable(),
+  "previousTeamId": zod.string().nullable(),
+  "nextTeamId": zod.string().nullable()
+})),
+  "nextBefore": zod.number().int().nullable()
+})
+
+
+/**
+ * @summary Sharing changes visible only to the uploader
+ */
+export const ListEvidenceDocumentAccessHistoryParams = zod.object({
+  "batchId": zod.coerce.string(),
+  "documentId": zod.coerce.string()
+})
+
+
+
+
+export const ListEvidenceDocumentAccessHistoryQueryParams = zod.object({
+  "before": zod.coerce.number().int().min(1).optional()
+})
+
+export const ListEvidenceDocumentAccessHistoryResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "actorId": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "action": zod.enum(['member_approved', 'member_removed', 'sharing_changed']),
+  "memberId": zod.string().nullable(),
+  "previousTeamId": zod.string().nullable(),
+  "nextTeamId": zod.string().nullable()
+})),
+  "nextBefore": zod.number().int().nullable()
+})
+
+
+/**
  * @summary Read allocation snapshots, newest first, from the shared demo registry
  */
 export const listPackagingAllocationHistoryPathIdMax = 100;

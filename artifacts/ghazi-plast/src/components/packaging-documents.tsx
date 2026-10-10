@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@workspace/replit-auth-web";
 import type { PackagingDocument } from "@workspace/api-client-react";
 import { PackagingTeams, useEvidenceTeams } from "./packaging-teams";
+import { EvidenceAccessHistory } from "./evidence-access-history";
 
 const labels = { supplier_declaration: "Supplier declaration / certificate", migration_report: "Migration test report", inspection_report: "Inspection report" };
 type Kind = keyof typeof labels;
@@ -76,6 +77,7 @@ export function PackagingDocuments({ batchId }: { batchId: string }) {
       }));
       await qc.invalidateQueries({ queryKey: key });
       setMessage(sharedTeamId ? "Evidence shared with the approved team. It remains unverified." : "Evidence is now private to your account.");
+      await qc.invalidateQueries({ queryKey: ["evidence-access-history"] });
     } catch (e) { setError(e instanceof Error ? e.message : "Sharing failed."); }
     finally { setBusy(false); }
   };
@@ -102,6 +104,7 @@ export function PackagingDocuments({ batchId }: { batchId: string }) {
                 {teams.data?.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             </label>}
+            {doc.canManage && user && <EvidenceAccessHistory key={`${user.id}:${doc.id}`} userId={user.id} endpoint={`${endpoint}/${encodeURIComponent(doc.id)}/access-history`} />}
           </li>)}</ul> : <p>No private or team-shared files available to your account for this batch.</p>}
         <fieldset disabled={busy}>
           <label className="ptc-field">Document category<select value={kind} onChange={e => setKind(e.target.value as Kind)}>{Object.entries(labels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>

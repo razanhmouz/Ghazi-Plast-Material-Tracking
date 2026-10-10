@@ -23,12 +23,15 @@ import type {
   AuthUserEnvelope,
   BeginBrowserLoginParams,
   DestinationInput,
+  EvidenceAccessHistory,
   EvidenceSharingInput,
   EvidenceTeam,
   EvidenceTeamInput,
   ExchangeMobileAuthorizationCode200,
   GetTraceParams,
   HealthStatus,
+  ListEvidenceDocumentAccessHistoryParams,
+  ListEvidenceTeamAccessHistoryParams,
   LogoutMobileSession200,
   MobileTokenExchangeRequest,
   PackagingAllocationChange,
@@ -72,6 +75,189 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getListEvidenceTeamAccessHistoryUrl = (teamId: string,
+    params?: ListEvidenceTeamAccessHistoryParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/packaging/teams/${teamId}/access-history?${stringifiedParams}` : `/api/packaging/teams/${teamId}/access-history`
+}
+
+/**
+ * @summary Membership changes visible only to the current team owner
+ */
+export const listEvidenceTeamAccessHistory = async (teamId: string,
+    params?: ListEvidenceTeamAccessHistoryParams, options?: Parameters<typeof customFetch>[1]): Promise<EvidenceAccessHistory> => {
+
+  return customFetch<EvidenceAccessHistory>(getListEvidenceTeamAccessHistoryUrl(teamId,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEvidenceTeamAccessHistoryQueryKey = (teamId: string,
+    params?: ListEvidenceTeamAccessHistoryParams,) => {
+    return [
+    `/api/packaging/teams/${teamId}/access-history`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListEvidenceTeamAccessHistoryQueryOptions = <TData = Awaited<ReturnType<typeof listEvidenceTeamAccessHistory>>, TError = ErrorType<void>>(teamId: string,
+    params?: ListEvidenceTeamAccessHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvidenceTeamAccessHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEvidenceTeamAccessHistoryQueryKey(teamId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvidenceTeamAccessHistory>>> = ({ signal }) => listEvidenceTeamAccessHistory(teamId,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: teamId !== null && teamId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEvidenceTeamAccessHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEvidenceTeamAccessHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof listEvidenceTeamAccessHistory>>>
+export type ListEvidenceTeamAccessHistoryQueryError = ErrorType<void>
+
+
+/**
+ * @summary Membership changes visible only to the current team owner
+ */
+
+export function useListEvidenceTeamAccessHistory<TData = Awaited<ReturnType<typeof listEvidenceTeamAccessHistory>>, TError = ErrorType<void>>(
+ teamId: string,
+    params?: ListEvidenceTeamAccessHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvidenceTeamAccessHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEvidenceTeamAccessHistoryQueryOptions(teamId,params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListEvidenceDocumentAccessHistoryUrl = (batchId: string,
+    documentId: string,
+    params?: ListEvidenceDocumentAccessHistoryParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/packaging/batches/${batchId}/documents/${documentId}/access-history?${stringifiedParams}` : `/api/packaging/batches/${batchId}/documents/${documentId}/access-history`
+}
+
+/**
+ * @summary Sharing changes visible only to the uploader
+ */
+export const listEvidenceDocumentAccessHistory = async (batchId: string,
+    documentId: string,
+    params?: ListEvidenceDocumentAccessHistoryParams, options?: Parameters<typeof customFetch>[1]): Promise<EvidenceAccessHistory> => {
+
+  return customFetch<EvidenceAccessHistory>(getListEvidenceDocumentAccessHistoryUrl(batchId,documentId,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEvidenceDocumentAccessHistoryQueryKey = (batchId: string,
+    documentId: string,
+    params?: ListEvidenceDocumentAccessHistoryParams,) => {
+    return [
+    `/api/packaging/batches/${batchId}/documents/${documentId}/access-history`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListEvidenceDocumentAccessHistoryQueryOptions = <TData = Awaited<ReturnType<typeof listEvidenceDocumentAccessHistory>>, TError = ErrorType<void>>(batchId: string,
+    documentId: string,
+    params?: ListEvidenceDocumentAccessHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvidenceDocumentAccessHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEvidenceDocumentAccessHistoryQueryKey(batchId,documentId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvidenceDocumentAccessHistory>>> = ({ signal }) => listEvidenceDocumentAccessHistory(batchId,documentId,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: batchId !== null && batchId !== undefined && documentId !== null && documentId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEvidenceDocumentAccessHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEvidenceDocumentAccessHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof listEvidenceDocumentAccessHistory>>>
+export type ListEvidenceDocumentAccessHistoryQueryError = ErrorType<void>
+
+
+/**
+ * @summary Sharing changes visible only to the uploader
+ */
+
+export function useListEvidenceDocumentAccessHistory<TData = Awaited<ReturnType<typeof listEvidenceDocumentAccessHistory>>, TError = ErrorType<void>>(
+ batchId: string,
+    documentId: string,
+    params?: ListEvidenceDocumentAccessHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvidenceDocumentAccessHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEvidenceDocumentAccessHistoryQueryOptions(batchId,documentId,params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListPackagingAllocationHistoryUrl = (id: string,) => {
 

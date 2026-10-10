@@ -44,6 +44,7 @@ export function PackagingEditor({ batch, close, saved }: { batch: PackagingBatch
   const [conflict,setConflict] = useState<PackagingBatch | null>(null);
   const [reloading,setReloading] = useState(false);
   const [allocations,setAllocations] = useState(batch?.allocations ?? []);
+  const [correctionReason,setCorrectionReason] = useState("");
   const create = useCreatePackagingBatch(); const update = useUpdatePackagingBatch(); const qc = useQueryClient();
   const busy = create.isPending || update.isPending || reloading;
   const reloadLatest = async () => {
@@ -85,7 +86,7 @@ export function PackagingEditor({ batch, close, saved }: { batch: PackagingBatch
         setError("Another editor saved this record. Your unsaved entries have been preserved.");
       } else setError(e instanceof Error ? e.message : "The record could not be saved. Your entries are preserved; try again.");
     }};
-    if(batch) update.mutate({id:batch.id,data:{...data,expectedUpdatedAt}},options);else create.mutate({data},options);
+    if(batch) update.mutate({id:batch.id,data:{...data,expectedUpdatedAt,correctionReason:correctionReason.trim() || undefined}},options);else create.mutate({data},options);
   };
   return <Dialog open onOpenChange={open=>!open&&!busy&&close()}><DialogContent className="ptc ptc-dialog" style={{minHeight:0}} onEscapeKeyDown={e=>busy&&e.preventDefault()} onInteractOutside={e=>busy&&e.preventDefault()}>
     <DialogTitle className="ptc-dialog-title">{batch?"Edit material batch":"Register material batch"}</DialogTitle><DialogDescription className="ptc-dialog-desc">Capture the source, quality declaration and downstream links in one record.</DialogDescription>
@@ -105,6 +106,10 @@ export function PackagingEditor({ batch, close, saved }: { batch: PackagingBatch
       <div className="ptc-form-section">04 / Aggregate downstream links · unallocated</div>
       <label className="ptc-field">Finished batch IDs · one per line<textarea data-testid="input-packaging-finishedBatches" rows={3} value={finished} onChange={e=>setFinished(e.target.value)}/></label><label className="ptc-field">Customers / destinations · one per line<textarea data-testid="input-packaging-destinations" rows={3} value={destinations} onChange={e=>setDestinations(e.target.value)}/></label>
       <AllocationFields value={allocations} change={setAllocations}/>
+      {batch && <label className="ptc-field ptc-field-wide">Allocation correction reason · optional
+        <textarea data-testid="input-packaging-correctionReason" rows={3} maxLength={1000} value={correctionReason} onChange={e=>setCorrectionReason(e.target.value)} aria-describedby="correction-reason-help"/>
+        <small id="correction-reason-help">Saved in read-only history only when customer allocations change. Visible to anyone viewing this shared-demo record; do not include private information.</small>
+      </label>}
     </div></fieldset>
     <div className="ptc-note"><ShieldAlert/>These are human-entered declarations, not verified legal compliance. “Documented” records a reference only; it does not certify food-contact suitability.</div>
     {(blocked||error)&&<p role="alert" className="ptc-error">{blocked||error}</p>}

@@ -98,7 +98,7 @@ router.put("/packaging/batches/:id", async (req, res): Promise<void> => {
   const error = validate(body.data);
   if (error) { res.status(400).json({ error }); return; }
   try {
-    const { expectedUpdatedAt, ...input } = body.data;
+    const { expectedUpdatedAt, correctionReason, ...input } = body.data;
     const normalized = normalize(input);
     const row = await db.transaction(async tx => {
       // Lock the state being replaced; the version predicate still rejects stale drafts.
@@ -122,6 +122,7 @@ router.put("/packaging/batches/:id", async (req, res): Promise<void> => {
       if (allocationsChanged(before, after)) await tx.insert(packagingAllocationHistory).values({
         id: randomUUID(), batchId: updated.id, lotId: updated.lotId,
         before, after, attribution: "shared_demo", createdAt: updated.updatedAt,
+        correctionReason: correctionReason?.trim() || null,
       });
       return updated;
     });

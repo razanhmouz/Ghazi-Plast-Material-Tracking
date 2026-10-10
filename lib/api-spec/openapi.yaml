@@ -366,6 +366,11 @@ components:
           type: array
           items: { $ref: "#/components/schemas/PackagingAllocation" }
         createdAt: { type: string, format: date-time }
+        correctionReason:
+          type: string
+          nullable: true
+          maxLength: 1000
+          description: Optional human-entered reason for this allocation change; absent or null for older entries and edits without a reason.
         attribution:
           type: string
           enum: [shared_demo]
@@ -444,6 +449,10 @@ components:
         - type: object
           required: [expectedUpdatedAt]
           properties:
+            correctionReason:
+              type: string
+              maxLength: 1000
+              description: Optional reason saved only when allocations change. Whitespace-only input is treated as no reason.
             expectedUpdatedAt:
               type: string
               format: date-time

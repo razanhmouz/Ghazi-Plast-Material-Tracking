@@ -8,6 +8,11 @@
 import type { PackagingBatchInput } from './packagingBatchInput';
 
 export type PackagingBatchUpdate = PackagingBatchInput & {
+  /**
+     * Optional reason saved only when allocations change. Whitespace-only input is treated as no reason.
+     * @maxLength 1000
+     */
+  correctionReason?: string;
   /** updatedAt from the record the editor last reviewed */
   expectedUpdatedAt: Date;
 };

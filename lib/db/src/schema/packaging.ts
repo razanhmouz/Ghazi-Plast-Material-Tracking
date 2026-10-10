@@ -53,6 +53,7 @@ export const packagingAllocationHistory = pgTable("packaging_allocation_history"
   lotId: text("lot_id").notNull(),
   before: jsonb("before").$type<Allocations>().notNull(),
   after: jsonb("after").$type<Allocations>().notNull(),
+  correctionReason: text("correction_reason"),
   attribution: text("attribution").$type<"shared_demo">().notNull().default("shared_demo"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, table => [index("packaging_allocation_history_batch_time").on(table.batchId, table.createdAt)]);

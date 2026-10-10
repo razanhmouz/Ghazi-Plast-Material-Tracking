@@ -17,6 +17,7 @@ export function PackagingAllocationHistory({ batchId }: { batchId: string }) {
         {" · Shared-demo edit · "}{change.lotId}
       </summary>
       <small>Not a verified staff identity. All quantities remain human-entered trace records, not confirmed shipments.</small>
+      <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}><strong>Correction reason: </strong>{change.correctionReason || "No reason recorded."}</p>
       <h4>Before</h4>
       {change.before.length ? <AllocationTrace allocations={change.before}/> : <p>No customer allocations.</p>}
       <h4>After</h4>

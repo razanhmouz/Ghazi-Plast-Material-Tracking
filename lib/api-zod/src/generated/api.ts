@@ -33,6 +33,8 @@ export const listPackagingAllocationHistoryResponseAfterItemCustomerMax = 200;
 export const listPackagingAllocationHistoryResponseAfterItemQuantityExclusiveMin = 0;
 export const listPackagingAllocationHistoryResponseAfterItemQuantityMax = 1000000000;
 
+export const listPackagingAllocationHistoryResponseCorrectionReasonMax = 1000;
+
 
 
 export const ListPackagingAllocationHistoryResponseItem = zod.object({
@@ -52,6 +54,7 @@ export const ListPackagingAllocationHistoryResponseItem = zod.object({
   "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
 }).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')),
   "createdAt": zod.coerce.date(),
+  "correctionReason": zod.string().max(listPackagingAllocationHistoryResponseCorrectionReasonMax).nullish().describe('Optional human-entered reason for this allocation change; absent or null for older entries and edits without a reason.'),
   "attribution": zod.enum(['shared_demo']).describe('Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session')
 })
 export const ListPackagingAllocationHistoryResponse = zod.array(ListPackagingAllocationHistoryResponseItem)
@@ -471,6 +474,8 @@ export const updatePackagingBatchBodyOneAllocationsItemQuantityMax = 1000000000;
 
 export const updatePackagingBatchBodyOneAllocationsMax = 100;
 
+export const updatePackagingBatchBodyTwoCorrectionReasonMax = 1000;
+
 
 
 export const UpdatePackagingBatchBody = zod.object({
@@ -495,6 +500,7 @@ export const UpdatePackagingBatchBody = zod.object({
   "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
 }).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')).max(updatePackagingBatchBodyOneAllocationsMax).optional().describe('Exact allocations; omitted on update preserves existing entries. Empty array explicitly clears entries. Aggregate links remain independent and unallocated.')
 }).and(zod.object({
+  "correctionReason": zod.string().max(updatePackagingBatchBodyTwoCorrectionReasonMax).optional().describe('Optional reason saved only when allocations change. Whitespace-only input is treated as no reason.'),
   "expectedUpdatedAt": zod.coerce.date().describe('updatedAt from the record the editor last reviewed')
 }))
 

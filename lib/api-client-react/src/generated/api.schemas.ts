@@ -56,6 +56,11 @@ export interface PackagingAllocationChange {
   before: PackagingAllocation[];
   after: PackagingAllocation[];
   createdAt: string;
+  /**
+     * Optional human-entered reason for this allocation change; absent or null for older entries and edits without a reason.
+     * @maxLength 1000
+     */
+  correctionReason?: string | null;
   /** Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session */
   attribution: PackagingAllocationChangeAttribution;
 }
@@ -235,6 +240,11 @@ export interface PackagingBatchInput {
 }
 
 export type PackagingBatchUpdate = PackagingBatchInput & {
+  /**
+     * Optional reason saved only when allocations change. Whitespace-only input is treated as no reason.
+     * @maxLength 1000
+     */
+  correctionReason?: string;
   /** updatedAt from the record the editor last reviewed */
   expectedUpdatedAt: string;
 };

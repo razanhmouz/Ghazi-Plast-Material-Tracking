@@ -26,7 +26,7 @@ export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
   return (
     <section aria-labelledby="workflow-heading" className="panel overflow-hidden">
       <div className="px-4 py-2.5 border-b flex flex-wrap items-center justify-between gap-2">
-        <h2 id="workflow-heading" className="micro !text-foreground">Staff workflow</h2>
+        <h2 id="workflow-heading" className="micro !text-foreground">Material flow</h2>
         <span className="font-mono text-[10px] uppercase tracking-wider text-primary" aria-live="polite">
           Step {current} of 4 · {resultsReady ? "Trace results displayed" : "Ready to trace"}
         </span>

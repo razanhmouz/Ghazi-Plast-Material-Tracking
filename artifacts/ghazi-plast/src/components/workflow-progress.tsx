@@ -6,11 +6,6 @@ const steps = [
     owner: "Production Department",
   },
   {
-    title: "Record quality & deliveries",
-    owner: "Quality checks · Shipping Department",
-    description: "Record quality checks and release decisions for each batch. Shipping links batch quantities to specific customers.",
-  },
-  {
     title: "Search & start tracking",
     owner: "User",
   },
@@ -23,13 +18,13 @@ const steps = [
 
 export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
   const [paused, setPaused] = useState(false);
-  const current = resultsReady ? 4 : 3;
+  const current = resultsReady ? steps.length : steps.length - 1;
   return (
     <section aria-labelledby="workflow-heading" className="panel overflow-hidden">
       <div className="px-4 py-2.5 border-b flex flex-wrap items-center justify-between gap-2">
         <h2 id="workflow-heading" className="micro !text-foreground">Material flow / Live pipeline</h2>
         <span className="font-mono text-[10px] uppercase tracking-wider text-primary" aria-live="polite">
-          Step {current} of 4 · {resultsReady ? "Trace results displayed" : "Ready to trace"}
+          Step {current} of {steps.length} · {resultsReady ? "Trace results displayed" : "Ready to trace"}
         </span>
       </div>
       <div className="px-4 pt-4 pb-3 border-b">
@@ -57,14 +52,14 @@ export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
           </button>
         </div>
       </div>
-      <ol className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <ol className="grid grid-cols-1 md:grid-cols-3">
         {steps.map((step, index) => {
           const n = index + 1;
           const active = n === current;
           const done = n < current;
           return (
             <li key={step.title} aria-current={active ? "step" : undefined}
-              className={`relative p-4 border-b sm:[&:nth-child(odd)]:border-r xl:border-b-0 xl:border-r xl:last:border-r-0 ${active ? "bg-primary/[0.06]" : ""}`}>
+              className={`relative p-4 border-b last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 ${active ? "bg-primary/[0.06]" : ""}`}>
               {active && <span className="absolute inset-x-0 top-0 h-0.5 bg-primary" aria-hidden />}
               <div className="flex items-center gap-2.5 mb-2">
                 <span className={`h-6 w-6 rounded-full border flex items-center justify-center text-[11px] font-mono font-semibold shrink-0 ${active ? "bg-primary text-primary-foreground border-primary" : done ? "border-primary/60 text-primary" : "border-border text-muted-foreground"}`}>

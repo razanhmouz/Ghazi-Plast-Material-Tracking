@@ -29,7 +29,7 @@ try {
   const history = async () => {
     const result = await request(`/${id}/allocation-history`);
     assert.equal(result.status, 200);
-    return ListPackagingAllocationHistoryResponse.parse(result.body);
+    return ListPackagingAllocationHistoryResponse.parse(result.body).items;
   };
   const original = (await history())[0];
   assert.equal(original.correctionReason, null);

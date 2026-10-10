@@ -5,16 +5,6 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-/**
- * Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session
- */
-export type PackagingAllocationChangeAttribution = typeof PackagingAllocationChangeAttribution[keyof typeof PackagingAllocationChangeAttribution];
-
-
-export const PackagingAllocationChangeAttribution = {
-  shared_demo: 'shared_demo',
-} as const;
-
 export type PackagingAllocationUnit = typeof PackagingAllocationUnit[keyof typeof PackagingAllocationUnit];
 
 
@@ -49,6 +39,16 @@ export interface PackagingAllocation {
   unit: PackagingAllocationUnit;
 }
 
+/**
+ * Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session
+ */
+export type PackagingAllocationChangeAttribution = typeof PackagingAllocationChangeAttribution[keyof typeof PackagingAllocationChangeAttribution];
+
+
+export const PackagingAllocationChangeAttribution = {
+  shared_demo: 'shared_demo',
+} as const;
+
 export interface PackagingAllocationChange {
   id: string;
   batchId: string;
@@ -63,6 +63,15 @@ export interface PackagingAllocationChange {
   correctionReason?: string | null;
   /** Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session */
   attribution: PackagingAllocationChangeAttribution;
+}
+
+export interface PackagingAllocationHistoryPage {
+  items: PackagingAllocationChange[];
+  /**
+     * Pass as cursor to load older entries; null when there are no more.
+     * @nullable
+     */
+  nextCursor: string | null;
 }
 
 export interface AuthUser {
@@ -516,6 +525,20 @@ export type ListEvidenceDocumentAccessHistoryParams = {
  * @minimum 1
  */
 before?: number;
+};
+
+export type ListPackagingAllocationHistoryParams = {
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+/**
+ * Opaque nextCursor from the preceding page. Ordering is createdAt descending, then ID descending.
+ * @minLength 1
+ * @maxLength 100
+ */
+cursor?: string;
 };
 
 export type BeginBrowserLoginParams = {

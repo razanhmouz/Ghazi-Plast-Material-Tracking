@@ -32,9 +32,10 @@ import type {
   HealthStatus,
   ListEvidenceDocumentAccessHistoryParams,
   ListEvidenceTeamAccessHistoryParams,
+  ListPackagingAllocationHistoryParams,
   LogoutMobileSession200,
   MobileTokenExchangeRequest,
-  PackagingAllocationChange,
+  PackagingAllocationHistoryPage,
   PackagingBatch,
   PackagingBatchConflict,
   PackagingBatchInput,
@@ -259,20 +260,29 @@ export function useListEvidenceDocumentAccessHistory<TData = Awaited<ReturnType<
 
 
 
-export const getListPackagingAllocationHistoryUrl = (id: string,) => {
+export const getListPackagingAllocationHistoryUrl = (id: string,
+    params?: ListPackagingAllocationHistoryParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/packaging/batches/${id}/allocation-history`
+  return stringifiedParams.length > 0 ? `/api/packaging/batches/${id}/allocation-history?${stringifiedParams}` : `/api/packaging/batches/${id}/allocation-history`
 }
 
 /**
  * @summary Read allocation snapshots, newest first, from the shared demo registry
  */
-export const listPackagingAllocationHistory = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<PackagingAllocationChange[]> => {
+export const listPackagingAllocationHistory = async (id: string,
+    params?: ListPackagingAllocationHistoryParams, options?: Parameters<typeof customFetch>[1]): Promise<PackagingAllocationHistoryPage> => {
 
-  return customFetch<PackagingAllocationChange[]>(getListPackagingAllocationHistoryUrl(id),
+  return customFetch<PackagingAllocationHistoryPage>(getListPackagingAllocationHistoryUrl(id,params),
   {
     ...options,
     method: 'GET'
@@ -285,23 +295,25 @@ export const listPackagingAllocationHistory = async (id: string, options?: Param
 
 
 
-export const getListPackagingAllocationHistoryQueryKey = (id: string,) => {
+export const getListPackagingAllocationHistoryQueryKey = (id: string,
+    params?: ListPackagingAllocationHistoryParams,) => {
     return [
-    `/api/packaging/batches/${id}/allocation-history`
+    `/api/packaging/batches/${id}/allocation-history`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListPackagingAllocationHistoryQueryOptions = <TData = Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListPackagingAllocationHistoryQueryOptions = <TData = Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError = ErrorType<void>>(id: string,
+    params?: ListPackagingAllocationHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListPackagingAllocationHistoryQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getListPackagingAllocationHistoryQueryKey(id,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPackagingAllocationHistory>>> = ({ signal }) => listPackagingAllocationHistory(id, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPackagingAllocationHistory>>> = ({ signal }) => listPackagingAllocationHistory(id,params, { signal, ...requestOptions });
 
 
 
@@ -319,11 +331,12 @@ export type ListPackagingAllocationHistoryQueryError = ErrorType<void>
  */
 
 export function useListPackagingAllocationHistory<TData = Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError = ErrorType<void>>(
- id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ id: string,
+    params?: ListPackagingAllocationHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPackagingAllocationHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListPackagingAllocationHistoryQueryOptions(id,options)
+  const queryOptions = getListPackagingAllocationHistoryQueryOptions(id,params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

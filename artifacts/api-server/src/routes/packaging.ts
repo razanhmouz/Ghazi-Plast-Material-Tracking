@@ -6,7 +6,7 @@ import {
   CreatePackagingBatchBody, UpdatePackagingBatchBody, UpdatePackagingBatchParams,
   ListPackagingBatchesResponse, CreatePackagingBatchResponse, UpdatePackagingBatchResponse,
   SearchPackagingTraceBody, SearchPackagingTraceResponse,
-  ListPackagingAllocationHistoryParams, ListPackagingAllocationHistoryResponse,
+  ListPackagingAllocationHistoryParams, ListPackagingAllocationHistoryQueryParams, ListPackagingAllocationHistoryResponse,
 } from "@workspace/api-zod";
 import { ensurePackagingSamples } from "./packaging-seed";
 import { allocationsChanged } from "../lib/allocation-history";
@@ -61,19 +61,40 @@ router.get("/packaging/batches", async (_req, res) => {
 router.get("/packaging/batches/:id/allocation-history", async (req, res): Promise<void> => {
   const params = ListPackagingAllocationHistoryParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid batch ID." }); return; }
+  if ((req.query.limit !== undefined && (typeof req.query.limit !== "string" || !/^[1-9]\d*$/.test(req.query.limit))) ||
+      (req.query.cursor !== undefined && typeof req.query.cursor !== "string")) {
+    res.status(400).json({ error: "Invalid history limit or cursor." }); return;
+  }
+  const query = ListPackagingAllocationHistoryQueryParams.safeParse(req.query);
+  if (!query.success) { res.status(400).json({ error: "Invalid history limit or cursor." }); return; }
+  const { cursor, limit = 20 } = query.data;
   const [batch] = await db.select({ id: packagingBatches.id }).from(packagingBatches).where(eq(packagingBatches.id, params.data.id));
   if (!batch) { res.status(404).json({ error: "Material batch not found." }); return; }
+  // Read the immutable anchor at PostgreSQL precision, not JavaScript milliseconds.
+  const [anchor] = cursor ? await db.select({
+    createdAt: sql<string>`${packagingAllocationHistory.createdAt}::text`,
+    id: packagingAllocationHistory.id,
+  }).from(packagingAllocationHistory).where(and(
+    eq(packagingAllocationHistory.batchId, params.data.id),
+    eq(packagingAllocationHistory.id, cursor),
+  )) : [];
+  if (cursor && !anchor) { res.status(400).json({ error: "Invalid history cursor for this batch." }); return; }
   const rows = await db.select().from(packagingAllocationHistory)
-    .where(eq(packagingAllocationHistory.batchId, params.data.id))
-    .orderBy(desc(packagingAllocationHistory.createdAt), desc(packagingAllocationHistory.id));
-  res.json(ListPackagingAllocationHistoryResponse.parse(rows.map(row => ({
-    ...row, createdAt: row.createdAt.toISOString(),
-  }))));
+    .where(and(eq(packagingAllocationHistory.batchId, params.data.id),
+      anchor ? sql`(${packagingAllocationHistory.createdAt}, ${packagingAllocationHistory.id}) < (${anchor.createdAt}::timestamptz, ${anchor.id}::text)` : undefined))
+    .orderBy(desc(packagingAllocationHistory.createdAt), desc(packagingAllocationHistory.id))
+    .limit(limit + 1);
+  const items = rows.slice(0, limit);
+  res.json(ListPackagingAllocationHistoryResponse.parse({
+    items: items.map(row => ({ ...row, createdAt: row.createdAt.toISOString() })),
+    nextCursor: rows.length > limit ? items[items.length - 1].id : null,
+  }));
 });
 router.post("/packaging/batches", async (req, res): Promise<void> => {
   const body = CreatePackagingBatchBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: "Invalid material batch. Check required fields and quantity." }); return; }
   const error = validate(body.data);
+
   if (error) { res.status(400).json({ error }); return; }
   try {
     const row = await db.transaction(async tx => {
@@ -94,8 +115,10 @@ router.post("/packaging/batches", async (req, res): Promise<void> => {
 router.put("/packaging/batches/:id", async (req, res): Promise<void> => {
   const body = UpdatePackagingBatchBody.safeParse(req.body);
   const params = UpdatePackagingBatchParams.safeParse(req.params);
+
   if (!body.success || !params.success) { res.status(400).json({ error: "Invalid material batch." }); return; }
   const error = validate(body.data);
+
   if (error) { res.status(400).json({ error }); return; }
   try {
     const { expectedUpdatedAt, correctionReason, ...input } = body.data;

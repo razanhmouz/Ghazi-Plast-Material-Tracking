@@ -76,45 +76,59 @@ export const ListPackagingAllocationHistoryParams = zod.object({
   "id": zod.coerce.string().min(1).max(listPackagingAllocationHistoryPathIdMax)
 })
 
-export const listPackagingAllocationHistoryResponseBeforeItemFinishedLotIdMax = 100;
+export const listPackagingAllocationHistoryQueryLimitDefault = 20;
+export const listPackagingAllocationHistoryQueryLimitMax = 100;
 
-export const listPackagingAllocationHistoryResponseBeforeItemCustomerMax = 200;
-
-export const listPackagingAllocationHistoryResponseBeforeItemQuantityExclusiveMin = 0;
-export const listPackagingAllocationHistoryResponseBeforeItemQuantityMax = 1000000000;
-
-export const listPackagingAllocationHistoryResponseAfterItemFinishedLotIdMax = 100;
-
-export const listPackagingAllocationHistoryResponseAfterItemCustomerMax = 200;
-
-export const listPackagingAllocationHistoryResponseAfterItemQuantityExclusiveMin = 0;
-export const listPackagingAllocationHistoryResponseAfterItemQuantityMax = 1000000000;
-
-export const listPackagingAllocationHistoryResponseCorrectionReasonMax = 1000;
+export const listPackagingAllocationHistoryQueryCursorMax = 100;
 
 
 
-export const ListPackagingAllocationHistoryResponseItem = zod.object({
+export const ListPackagingAllocationHistoryQueryParams = zod.object({
+  "limit": zod.coerce.number().int().min(1).max(listPackagingAllocationHistoryQueryLimitMax).default(listPackagingAllocationHistoryQueryLimitDefault),
+  "cursor": zod.coerce.string().min(1).max(listPackagingAllocationHistoryQueryCursorMax).optional().describe('Opaque nextCursor from the preceding page. Ordering is createdAt descending, then ID descending.')
+})
+
+export const listPackagingAllocationHistoryResponseItemsItemBeforeItemFinishedLotIdMax = 100;
+
+export const listPackagingAllocationHistoryResponseItemsItemBeforeItemCustomerMax = 200;
+
+export const listPackagingAllocationHistoryResponseItemsItemBeforeItemQuantityExclusiveMin = 0;
+export const listPackagingAllocationHistoryResponseItemsItemBeforeItemQuantityMax = 1000000000;
+
+export const listPackagingAllocationHistoryResponseItemsItemAfterItemFinishedLotIdMax = 100;
+
+export const listPackagingAllocationHistoryResponseItemsItemAfterItemCustomerMax = 200;
+
+export const listPackagingAllocationHistoryResponseItemsItemAfterItemQuantityExclusiveMin = 0;
+export const listPackagingAllocationHistoryResponseItemsItemAfterItemQuantityMax = 1000000000;
+
+export const listPackagingAllocationHistoryResponseItemsItemCorrectionReasonMax = 1000;
+
+
+
+export const ListPackagingAllocationHistoryResponse = zod.object({
+  "items": zod.array(zod.object({
   "id": zod.string(),
   "batchId": zod.string(),
   "lotId": zod.string(),
   "before": zod.array(zod.object({
-  "finishedLotId": zod.string().min(1).max(listPackagingAllocationHistoryResponseBeforeItemFinishedLotIdMax),
-  "customer": zod.string().min(1).max(listPackagingAllocationHistoryResponseBeforeItemCustomerMax),
-  "quantity": zod.number().gt(listPackagingAllocationHistoryResponseBeforeItemQuantityExclusiveMin).max(listPackagingAllocationHistoryResponseBeforeItemQuantityMax),
+  "finishedLotId": zod.string().min(1).max(listPackagingAllocationHistoryResponseItemsItemBeforeItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(listPackagingAllocationHistoryResponseItemsItemBeforeItemCustomerMax),
+  "quantity": zod.number().gt(listPackagingAllocationHistoryResponseItemsItemBeforeItemQuantityExclusiveMin).max(listPackagingAllocationHistoryResponseItemsItemBeforeItemQuantityMax),
   "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
 }).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')),
   "after": zod.array(zod.object({
-  "finishedLotId": zod.string().min(1).max(listPackagingAllocationHistoryResponseAfterItemFinishedLotIdMax),
-  "customer": zod.string().min(1).max(listPackagingAllocationHistoryResponseAfterItemCustomerMax),
-  "quantity": zod.number().gt(listPackagingAllocationHistoryResponseAfterItemQuantityExclusiveMin).max(listPackagingAllocationHistoryResponseAfterItemQuantityMax),
+  "finishedLotId": zod.string().min(1).max(listPackagingAllocationHistoryResponseItemsItemAfterItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(listPackagingAllocationHistoryResponseItemsItemAfterItemCustomerMax),
+  "quantity": zod.number().gt(listPackagingAllocationHistoryResponseItemsItemAfterItemQuantityExclusiveMin).max(listPackagingAllocationHistoryResponseItemsItemAfterItemQuantityMax),
   "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
 }).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')),
   "createdAt": zod.coerce.date(),
-  "correctionReason": zod.string().max(listPackagingAllocationHistoryResponseCorrectionReasonMax).nullish().describe('Optional human-entered reason for this allocation change; absent or null for older entries and edits without a reason.'),
+  "correctionReason": zod.string().max(listPackagingAllocationHistoryResponseItemsItemCorrectionReasonMax).nullish().describe('Optional human-entered reason for this allocation change; absent or null for older entries and edits without a reason.'),
   "attribution": zod.enum(['shared_demo']).describe('Shared-demo edit, not an authenticated staff identity, even if the browser has an evidence-upload session')
+})),
+  "nextCursor": zod.string().nullable().describe('Pass as cursor to load older entries; null when there are no more.')
 })
-export const ListPackagingAllocationHistoryResponse = zod.array(ListPackagingAllocationHistoryResponseItem)
 
 
 export const ListEvidenceTeamsResponseItem = zod.object({

@@ -48,15 +48,19 @@ paths:
       summary: Read allocation snapshots, newest first, from the shared demo registry
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - name: cursor
+          in: query
+          description: Opaque nextCursor from the preceding page. Ordering is createdAt descending, then ID descending.
+          schema: { type: string, minLength: 1, maxLength: 100 }
       responses:
         "200":
           description: Changes recorded since history tracking began; no historical identities are inferred
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: "#/components/schemas/PackagingAllocationChange" }
-        "400": { description: Invalid batch ID }
+                $ref: "#/components/schemas/PackagingAllocationHistoryPage"
+        "400": { description: "Invalid batch ID, limit, or cursor" }
         "404": { description: Batch not found }
   /packaging/teams:
     get:
@@ -383,6 +387,16 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    PackagingAllocationHistoryPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PackagingAllocationChange" }
+        nextCursor:
+          type: ["string", "null"]
+          description: Pass as cursor to load older entries; null when there are no more.
     PackagingAllocationChange:
       type: object
       required: [id, batchId, lotId, before, after, createdAt, attribution]

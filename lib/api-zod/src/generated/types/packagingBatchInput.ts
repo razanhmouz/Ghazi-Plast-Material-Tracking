@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { PackagingAllocation } from './packagingAllocation';
 import type { PackagingBatchInputCategory } from './packagingBatchInputCategory';
 import type { PackagingBatchInputComplianceStatus } from './packagingBatchInputComplianceStatus';
 import type { PackagingBatchInputStatus } from './packagingBatchInputStatus';
@@ -55,4 +56,9 @@ export interface PackagingBatchInput {
      * @items.maxLength 200
      */
   destinations: string[];
+  /**
+     * Exact allocations; omitted on update preserves existing entries. Empty array explicitly clears entries. Aggregate links remain independent and unallocated.
+     * @maxItems 100
+     */
+  allocations?: PackagingAllocation[];
 }

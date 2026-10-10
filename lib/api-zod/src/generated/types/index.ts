@@ -16,6 +16,8 @@ export * from './destinationType';
 export * from './getTraceParams';
 export * from './healthStatus';
 export * from './material';
+export * from './packagingAllocation';
+export * from './packagingAllocationUnit';
 export * from './packagingBatch';
 export * from './packagingBatchInput';
 export * from './packagingBatchInputCategory';

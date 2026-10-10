@@ -13,3 +13,9 @@ Material categories are inks, adhesives, coatings, and raw materials. New sample
 **Why:** The user supplied no source documents, test results, or real supplier dataset for this center.
 
 **How to apply:** Label demo records; treat documented status as a human-entered reference rather than verified food-contact compliance. AI answers must remain grounded in stored records and cannot certify or automatically release products.
+
+Exact allocations describe finished goods, not raw-material consumption. Do not infer allocation capacity from incoming material quantity or sum repeated finished-goods allocations across material traces.
+
+**Why:** Finished production totals and conversion yields are not supplied, and multiple input materials may point to the same finished goods. Such arithmetic would invent stock balances or double-count distribution.
+
+**How to apply:** Keep aggregate links as independent, unallocated evidence. Report only staff-entered lot/customer quantities, leaving distribution completeness and remaining stock unknown until a dedicated production/shipment model exists.

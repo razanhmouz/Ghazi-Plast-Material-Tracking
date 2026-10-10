@@ -17,6 +17,12 @@ export const packagingBatches = pgTable("packaging_batches", {
     complianceNotes: string;
     finishedBatches: string[];
     destinations: string[];
+    allocations?: {
+      finishedLotId: string;
+      customer: string;
+      quantity: number;
+      unit: "pieces" | "kg" | "liters" | "rolls" | "sheets" | "cartons";
+    }[];
   }>().notNull(),
   demo: boolean("demo").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

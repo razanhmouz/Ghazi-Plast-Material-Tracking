@@ -33,6 +33,15 @@ export const listPackagingBatchesResponseOneDestinationsItemMax = 200;
 
 export const listPackagingBatchesResponseOneDestinationsMax = 100;
 
+export const listPackagingBatchesResponseOneAllocationsItemFinishedLotIdMax = 100;
+
+export const listPackagingBatchesResponseOneAllocationsItemCustomerMax = 200;
+
+export const listPackagingBatchesResponseOneAllocationsItemQuantityExclusiveMin = 0;
+export const listPackagingBatchesResponseOneAllocationsItemQuantityMax = 1000000000;
+
+export const listPackagingBatchesResponseOneAllocationsMax = 100;
+
 
 
 export const ListPackagingBatchesResponseItem = zod.object({
@@ -49,7 +58,13 @@ export const ListPackagingBatchesResponseItem = zod.object({
   "documentRef": zod.string().max(listPackagingBatchesResponseOneDocumentRefMax),
   "complianceNotes": zod.string().max(listPackagingBatchesResponseOneComplianceNotesMax),
   "finishedBatches": zod.array(zod.string().min(1).max(listPackagingBatchesResponseOneFinishedBatchesItemMax)).max(listPackagingBatchesResponseOneFinishedBatchesMax),
-  "destinations": zod.array(zod.string().min(1).max(listPackagingBatchesResponseOneDestinationsItemMax)).max(listPackagingBatchesResponseOneDestinationsMax)
+  "destinations": zod.array(zod.string().min(1).max(listPackagingBatchesResponseOneDestinationsItemMax)).max(listPackagingBatchesResponseOneDestinationsMax),
+  "allocations": zod.array(zod.object({
+  "finishedLotId": zod.string().min(1).max(listPackagingBatchesResponseOneAllocationsItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(listPackagingBatchesResponseOneAllocationsItemCustomerMax),
+  "quantity": zod.number().gt(listPackagingBatchesResponseOneAllocationsItemQuantityExclusiveMin).max(listPackagingBatchesResponseOneAllocationsItemQuantityMax),
+  "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
+}).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')).max(listPackagingBatchesResponseOneAllocationsMax).optional().describe('Exact allocations; omitted on update preserves existing entries. Empty array explicitly clears entries. Aggregate links remain independent and unallocated.')
 }).and(zod.object({
   "id": zod.string(),
   "demo": zod.boolean(),
@@ -83,6 +98,15 @@ export const createPackagingBatchBodyDestinationsItemMax = 200;
 
 export const createPackagingBatchBodyDestinationsMax = 100;
 
+export const createPackagingBatchBodyAllocationsItemFinishedLotIdMax = 100;
+
+export const createPackagingBatchBodyAllocationsItemCustomerMax = 200;
+
+export const createPackagingBatchBodyAllocationsItemQuantityExclusiveMin = 0;
+export const createPackagingBatchBodyAllocationsItemQuantityMax = 1000000000;
+
+export const createPackagingBatchBodyAllocationsMax = 100;
+
 
 
 export const CreatePackagingBatchBody = zod.object({
@@ -99,7 +123,13 @@ export const CreatePackagingBatchBody = zod.object({
   "documentRef": zod.string().max(createPackagingBatchBodyDocumentRefMax),
   "complianceNotes": zod.string().max(createPackagingBatchBodyComplianceNotesMax),
   "finishedBatches": zod.array(zod.string().min(1).max(createPackagingBatchBodyFinishedBatchesItemMax)).max(createPackagingBatchBodyFinishedBatchesMax),
-  "destinations": zod.array(zod.string().min(1).max(createPackagingBatchBodyDestinationsItemMax)).max(createPackagingBatchBodyDestinationsMax)
+  "destinations": zod.array(zod.string().min(1).max(createPackagingBatchBodyDestinationsItemMax)).max(createPackagingBatchBodyDestinationsMax),
+  "allocations": zod.array(zod.object({
+  "finishedLotId": zod.string().min(1).max(createPackagingBatchBodyAllocationsItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(createPackagingBatchBodyAllocationsItemCustomerMax),
+  "quantity": zod.number().gt(createPackagingBatchBodyAllocationsItemQuantityExclusiveMin).max(createPackagingBatchBodyAllocationsItemQuantityMax),
+  "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
+}).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')).max(createPackagingBatchBodyAllocationsMax).optional().describe('Exact allocations; omitted on update preserves existing entries. Empty array explicitly clears entries. Aggregate links remain independent and unallocated.')
 })
 
 export const createPackagingBatchResponseOneLotIdMax = 100;
@@ -127,6 +157,15 @@ export const createPackagingBatchResponseOneDestinationsItemMax = 200;
 
 export const createPackagingBatchResponseOneDestinationsMax = 100;
 
+export const createPackagingBatchResponseOneAllocationsItemFinishedLotIdMax = 100;
+
+export const createPackagingBatchResponseOneAllocationsItemCustomerMax = 200;
+
+export const createPackagingBatchResponseOneAllocationsItemQuantityExclusiveMin = 0;
+export const createPackagingBatchResponseOneAllocationsItemQuantityMax = 1000000000;
+
+export const createPackagingBatchResponseOneAllocationsMax = 100;
+
 
 
 export const CreatePackagingBatchResponse = zod.object({
@@ -143,7 +182,13 @@ export const CreatePackagingBatchResponse = zod.object({
   "documentRef": zod.string().max(createPackagingBatchResponseOneDocumentRefMax),
   "complianceNotes": zod.string().max(createPackagingBatchResponseOneComplianceNotesMax),
   "finishedBatches": zod.array(zod.string().min(1).max(createPackagingBatchResponseOneFinishedBatchesItemMax)).max(createPackagingBatchResponseOneFinishedBatchesMax),
-  "destinations": zod.array(zod.string().min(1).max(createPackagingBatchResponseOneDestinationsItemMax)).max(createPackagingBatchResponseOneDestinationsMax)
+  "destinations": zod.array(zod.string().min(1).max(createPackagingBatchResponseOneDestinationsItemMax)).max(createPackagingBatchResponseOneDestinationsMax),
+  "allocations": zod.array(zod.object({
+  "finishedLotId": zod.string().min(1).max(createPackagingBatchResponseOneAllocationsItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(createPackagingBatchResponseOneAllocationsItemCustomerMax),
+  "quantity": zod.number().gt(createPackagingBatchResponseOneAllocationsItemQuantityExclusiveMin).max(createPackagingBatchResponseOneAllocationsItemQuantityMax),
+  "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
+}).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')).max(createPackagingBatchResponseOneAllocationsMax).optional().describe('Exact allocations; omitted on update preserves existing entries. Empty array explicitly clears entries. Aggregate links remain independent and unallocated.')
 }).and(zod.object({
   "id": zod.string(),
   "demo": zod.boolean(),
@@ -180,6 +225,15 @@ export const updatePackagingBatchBodyDestinationsItemMax = 200;
 
 export const updatePackagingBatchBodyDestinationsMax = 100;
 
+export const updatePackagingBatchBodyAllocationsItemFinishedLotIdMax = 100;
+
+export const updatePackagingBatchBodyAllocationsItemCustomerMax = 200;
+
+export const updatePackagingBatchBodyAllocationsItemQuantityExclusiveMin = 0;
+export const updatePackagingBatchBodyAllocationsItemQuantityMax = 1000000000;
+
+export const updatePackagingBatchBodyAllocationsMax = 100;
+
 
 
 export const UpdatePackagingBatchBody = zod.object({
@@ -196,7 +250,13 @@ export const UpdatePackagingBatchBody = zod.object({
   "documentRef": zod.string().max(updatePackagingBatchBodyDocumentRefMax),
   "complianceNotes": zod.string().max(updatePackagingBatchBodyComplianceNotesMax),
   "finishedBatches": zod.array(zod.string().min(1).max(updatePackagingBatchBodyFinishedBatchesItemMax)).max(updatePackagingBatchBodyFinishedBatchesMax),
-  "destinations": zod.array(zod.string().min(1).max(updatePackagingBatchBodyDestinationsItemMax)).max(updatePackagingBatchBodyDestinationsMax)
+  "destinations": zod.array(zod.string().min(1).max(updatePackagingBatchBodyDestinationsItemMax)).max(updatePackagingBatchBodyDestinationsMax),
+  "allocations": zod.array(zod.object({
+  "finishedLotId": zod.string().min(1).max(updatePackagingBatchBodyAllocationsItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(updatePackagingBatchBodyAllocationsItemCustomerMax),
+  "quantity": zod.number().gt(updatePackagingBatchBodyAllocationsItemQuantityExclusiveMin).max(updatePackagingBatchBodyAllocationsItemQuantityMax),
+  "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
+}).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')).max(updatePackagingBatchBodyAllocationsMax).optional().describe('Exact allocations; omitted on update preserves existing entries. Empty array explicitly clears entries. Aggregate links remain independent and unallocated.')
 })
 
 export const updatePackagingBatchResponseOneLotIdMax = 100;
@@ -224,6 +284,15 @@ export const updatePackagingBatchResponseOneDestinationsItemMax = 200;
 
 export const updatePackagingBatchResponseOneDestinationsMax = 100;
 
+export const updatePackagingBatchResponseOneAllocationsItemFinishedLotIdMax = 100;
+
+export const updatePackagingBatchResponseOneAllocationsItemCustomerMax = 200;
+
+export const updatePackagingBatchResponseOneAllocationsItemQuantityExclusiveMin = 0;
+export const updatePackagingBatchResponseOneAllocationsItemQuantityMax = 1000000000;
+
+export const updatePackagingBatchResponseOneAllocationsMax = 100;
+
 
 
 export const UpdatePackagingBatchResponse = zod.object({
@@ -240,7 +309,13 @@ export const UpdatePackagingBatchResponse = zod.object({
   "documentRef": zod.string().max(updatePackagingBatchResponseOneDocumentRefMax),
   "complianceNotes": zod.string().max(updatePackagingBatchResponseOneComplianceNotesMax),
   "finishedBatches": zod.array(zod.string().min(1).max(updatePackagingBatchResponseOneFinishedBatchesItemMax)).max(updatePackagingBatchResponseOneFinishedBatchesMax),
-  "destinations": zod.array(zod.string().min(1).max(updatePackagingBatchResponseOneDestinationsItemMax)).max(updatePackagingBatchResponseOneDestinationsMax)
+  "destinations": zod.array(zod.string().min(1).max(updatePackagingBatchResponseOneDestinationsItemMax)).max(updatePackagingBatchResponseOneDestinationsMax),
+  "allocations": zod.array(zod.object({
+  "finishedLotId": zod.string().min(1).max(updatePackagingBatchResponseOneAllocationsItemFinishedLotIdMax),
+  "customer": zod.string().min(1).max(updatePackagingBatchResponseOneAllocationsItemCustomerMax),
+  "quantity": zod.number().gt(updatePackagingBatchResponseOneAllocationsItemQuantityExclusiveMin).max(updatePackagingBatchResponseOneAllocationsItemQuantityMax),
+  "unit": zod.enum(['pieces', 'kg', 'liters', 'rolls', 'sheets', 'cartons'])
+}).describe('Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.')).max(updatePackagingBatchResponseOneAllocationsMax).optional().describe('Exact allocations; omitted on update preserves existing entries. Empty array explicitly clears entries. Aggregate links remain independent and unallocated.')
 }).and(zod.object({
   "id": zod.string(),
   "demo": zod.boolean(),

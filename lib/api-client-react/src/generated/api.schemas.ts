@@ -5,6 +5,40 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type PackagingAllocationUnit = typeof PackagingAllocationUnit[keyof typeof PackagingAllocationUnit];
+
+
+export const PackagingAllocationUnit = {
+  pieces: 'pieces',
+  kg: 'kg',
+  liters: 'liters',
+  rolls: 'rolls',
+  sheets: 'sheets',
+  cartons: 'cartons',
+} as const;
+
+/**
+ * Staff-recorded quantity from one finished lot to one customer/destination, scoped to this material trace. Not a shipment confirmation.
+ */
+export interface PackagingAllocation {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  finishedLotId: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  customer: string;
+  /**
+     * @maximum 1000000000
+     * @exclusiveMinimum 0
+     */
+  quantity: number;
+  unit: PackagingAllocationUnit;
+}
+
 export type PackagingBatchInputCategory = typeof PackagingBatchInputCategory[keyof typeof PackagingBatchInputCategory];
 
 
@@ -88,6 +122,11 @@ export interface PackagingBatchInput {
      * @items.maxLength 200
      */
   destinations: string[];
+  /**
+     * Exact allocations; omitted on update preserves existing entries. Empty array explicitly clears entries. Aggregate links remain independent and unallocated.
+     * @maxItems 100
+     */
+  allocations?: PackagingAllocation[];
 }
 
 export type PackagingBatch = PackagingBatchInput & {

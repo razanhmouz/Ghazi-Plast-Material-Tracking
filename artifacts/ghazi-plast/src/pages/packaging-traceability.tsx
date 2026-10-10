@@ -15,7 +15,7 @@ export default function PackagingTraceabilityPage() {
   const [question,setQuestion] = useState("");const [lastQuestion,setLastQuestion] = useState("");const [notice,setNotice] = useState("");
   useEffect(()=>{const previous=document.title;document.title="Packaging Traceability Center | Ghazi Plast";return()=>{document.title=previous;};},[]);
   const batches=query.data??[];
-  const filtered=batches.filter(b=>(category==="all"||b.category===category)&&(status==="all"||b.status===status)&&[b.lotId,b.materialName,b.supplierName,b.supplierCountry,b.supplierContact,b.documentRef,...b.finishedBatches,...b.destinations].join(" ").toLowerCase().includes(text.toLowerCase().trim()));
+  const filtered=batches.filter(b=>(category==="all"||b.category===category)&&(status==="all"||b.status===status)&&[b.lotId,b.materialName,b.supplierName,b.supplierCountry,b.supplierContact,b.documentRef,...b.finishedBatches,...b.destinations,...(b.allocations??[]).flatMap(a=>[a.finishedLotId,a.customer])].join(" ").toLowerCase().includes(text.toLowerCase().trim()));
   const suppliers=[...new Set(filtered.map(b=>b.supplierName))];
   const selectedBatch=batches.find(b=>b.id===selected);
   const ask=(value:string)=>{if(!value.trim()||ai.isPending)return;setLastQuestion(value.trim());ai.mutate({data:{query:value.trim()}});};
@@ -30,7 +30,7 @@ export default function PackagingTraceabilityPage() {
         ["Material batches",batches.length,"Across inks, adhesives, coatings & raw materials"],
         ["Recorded suppliers",new Set(batches.map(b=>b.supplierName)).size,"Derived from batch records"],
         ["Documentation open",batches.filter(b=>b.complianceStatus!=="documented").length,"Pending or review required"],
-        ["Finished lot links",new Set(batches.flatMap(b=>b.finishedBatches)).size,"Distinct recorded downstream lots"],
+        ["Finished lot links",new Set(batches.flatMap(b=>[...b.finishedBatches,...(b.allocations??[]).map(a=>a.finishedLotId)])).size,"Aggregate and explicitly allocated lots"],
       ].map(([label,count,sub])=><div className="ptc-metric" key={label}><div className="ptc-eyebrow">{label}</div><strong>{query.isLoading||query.isError?"—":count}</strong><span>{sub}</span></div>)}</section>
       <div className="ptc-layout"><section>
         <div className="ptc-tabs" role="tablist" aria-label="Packaging views">{[{id:"batches",name:"Material registry",icon:Layers},{id:"suppliers",name:"Supplier information",icon:Factory},{id:"quality",name:"Quality & compliance",icon:ShieldCheck}].map(t=><button key={t.id} role="tab" aria-selected={tab===t.id} data-testid={`tab-packaging-${t.id}`} onClick={()=>setTab(t.id)}><t.icon/>{t.name}</button>)}</div>
@@ -50,6 +50,6 @@ export default function PackagingTraceabilityPage() {
       <footer className="ptc-bottom"><span>GHAZI PLAST / PACKAGING TRACEABILITY</span><span>Food packaging · Paper cups · Converting</span></footer>
     </main>
     <PackagingDetail batch={selectedBatch} close={()=>setSelected(null)} edit={b=>{setSelected(null);setEditor(b);}}/>
-    {editor!==undefined&&<PackagingEditor key={editor?.id??"new"} batch={editor} close={()=>setEditor(undefined)} saved={b=>{setEditor(undefined);setSelected(b.id);setNotice(`${b.lotId} saved. The material registry has been updated.`);}}/>}
+    {editor!==undefined&&<PackagingEditor key={editor?.id??"new"} batch={editor} close={()=>setEditor(undefined)} saved={b=>{ai.reset();setEditor(undefined);setSelected(b.id);setNotice(`${b.lotId} saved. The material registry has been updated.`);}}/>}
   </div>;
 }

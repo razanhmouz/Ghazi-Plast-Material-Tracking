@@ -12,7 +12,6 @@ const steps = [
   {
     title: "Review affected output",
     owner: "Tracking results",
-    description: "View all affected finished batches, outbound deliveries, and remaining warehouse inventory.",
   },
 ];
 
@@ -68,7 +67,6 @@ export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
                 <h3 className="font-semibold text-sm leading-tight">{step.title}</h3>
               </div>
               <p className="micro !text-primary/90 mb-1">{step.owner}</p>
-              {step.description && <p className="text-xs leading-relaxed text-muted-foreground">{step.description}</p>}
             </li>
           );
         })}

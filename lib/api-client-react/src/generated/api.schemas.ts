@@ -5,6 +5,110 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type PackagingBatchInputCategory = typeof PackagingBatchInputCategory[keyof typeof PackagingBatchInputCategory];
+
+
+export const PackagingBatchInputCategory = {
+  ink: 'ink',
+  adhesive: 'adhesive',
+  coating: 'coating',
+  raw_material: 'raw_material',
+} as const;
+
+export type PackagingBatchInputUnit = typeof PackagingBatchInputUnit[keyof typeof PackagingBatchInputUnit];
+
+
+export const PackagingBatchInputUnit = {
+  kg: 'kg',
+  liters: 'liters',
+  rolls: 'rolls',
+  sheets: 'sheets',
+} as const;
+
+export type PackagingBatchInputStatus = typeof PackagingBatchInputStatus[keyof typeof PackagingBatchInputStatus];
+
+
+export const PackagingBatchInputStatus = {
+  pending: 'pending',
+  released: 'released',
+  hold: 'hold',
+} as const;
+
+export type PackagingBatchInputComplianceStatus = typeof PackagingBatchInputComplianceStatus[keyof typeof PackagingBatchInputComplianceStatus];
+
+
+export const PackagingBatchInputComplianceStatus = {
+  pending: 'pending',
+  documented: 'documented',
+  review_required: 'review_required',
+} as const;
+
+export interface PackagingBatchInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  lotId: string;
+  category: PackagingBatchInputCategory;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  materialName: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  supplierName: string;
+  /** @maxLength 100 */
+  supplierCountry: string;
+  /** @maxLength 200 */
+  supplierContact: string;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  quantity: number;
+  unit: PackagingBatchInputUnit;
+  status: PackagingBatchInputStatus;
+  complianceStatus: PackagingBatchInputComplianceStatus;
+  /** @maxLength 300 */
+  documentRef: string;
+  /** @maxLength 3000 */
+  complianceNotes: string;
+  /**
+     * @maxItems 100
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  finishedBatches: string[];
+  /**
+     * @maxItems 100
+     * @items.minLength 1
+     * @items.maxLength 200
+     */
+  destinations: string[];
+}
+
+export type PackagingBatch = PackagingBatchInput & {
+  id: string;
+  demo: boolean;
+  updatedAt: string;
+};
+
+export interface PackagingSearchInput {
+  /**
+     * @minLength 1
+     * @maxLength 1500
+     */
+  query: string;
+}
+
+export interface PackagingSearchResult {
+  answer: string;
+  batchIds: string[];
+}
+
 export type ChecklistEntryResult = typeof ChecklistEntryResult[keyof typeof ChecklistEntryResult];
 
 

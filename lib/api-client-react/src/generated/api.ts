@@ -23,6 +23,10 @@ import type {
   DestinationInput,
   GetTraceParams,
   HealthStatus,
+  PackagingBatch,
+  PackagingBatchInput,
+  PackagingSearchInput,
+  PackagingSearchResult,
   QualityAction,
   QualityActionInput,
   Run,
@@ -56,6 +60,324 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getListPackagingBatchesUrl = () => {
+
+
+
+
+  return `/api/packaging/batches`
+}
+
+export const listPackagingBatches = async ( options?: Parameters<typeof customFetch>[1]): Promise<PackagingBatch[]> => {
+
+  return customFetch<PackagingBatch[]>(getListPackagingBatchesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPackagingBatchesQueryKey = () => {
+    return [
+    `/api/packaging/batches`
+    ] as const;
+    }
+
+
+export const getListPackagingBatchesQueryOptions = <TData = Awaited<ReturnType<typeof listPackagingBatches>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPackagingBatches>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPackagingBatchesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPackagingBatches>>> = ({ signal }) => listPackagingBatches({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPackagingBatches>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPackagingBatchesQueryResult = NonNullable<Awaited<ReturnType<typeof listPackagingBatches>>>
+export type ListPackagingBatchesQueryError = ErrorType<unknown>
+
+
+
+export function useListPackagingBatches<TData = Awaited<ReturnType<typeof listPackagingBatches>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPackagingBatches>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPackagingBatchesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreatePackagingBatchUrl = () => {
+
+
+
+
+  return `/api/packaging/batches`
+}
+
+export const createPackagingBatch = async (packagingBatchInput: PackagingBatchInput, options?: Parameters<typeof customFetch>[1]): Promise<PackagingBatch> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PackagingBatch>(getCreatePackagingBatchUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(packagingBatchInput)
+  }
+);}
+
+
+
+
+
+export const getCreatePackagingBatchMutationKey = () => ['createPackagingBatch'] as const;
+
+export const getCreatePackagingBatchMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackagingBatch>>, TError,CreatePackagingBatchMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPackagingBatch>>, TError,CreatePackagingBatchMutationVariables, TContext> => {
+
+const mutationKey = getCreatePackagingBatchMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPackagingBatch>>, CreatePackagingBatchMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPackagingBatch(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePackagingBatchMutationResult = NonNullable<Awaited<ReturnType<typeof createPackagingBatch>>>
+    export type CreatePackagingBatchMutationBody = BodyType<PackagingBatchInput>
+    export type CreatePackagingBatchMutationError = ErrorType<unknown>
+    export type CreatePackagingBatchMutationVariables = {data: BodyType<PackagingBatchInput>}
+
+    export const useCreatePackagingBatch = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackagingBatch>>, TError,CreatePackagingBatchMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPackagingBatch>>,
+        TError,
+        CreatePackagingBatchMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreatePackagingBatchMutationOptions(options));
+    }
+
+export const getUpdatePackagingBatchUrl = (id: string,) => {
+
+
+
+
+  return `/api/packaging/batches/${id}`
+}
+
+export const updatePackagingBatch = async (id: string,
+    packagingBatchInput: PackagingBatchInput, options?: Parameters<typeof customFetch>[1]): Promise<PackagingBatch> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PackagingBatch>(getUpdatePackagingBatchUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(packagingBatchInput)
+  }
+);}
+
+
+
+
+
+export const getUpdatePackagingBatchMutationKey = () => ['updatePackagingBatch'] as const;
+
+export const getUpdatePackagingBatchMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePackagingBatch>>, TError,UpdatePackagingBatchMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updatePackagingBatch>>, TError,UpdatePackagingBatchMutationVariables, TContext> => {
+
+const mutationKey = getUpdatePackagingBatchMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePackagingBatch>>, UpdatePackagingBatchMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updatePackagingBatch(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdatePackagingBatchMutationResult = NonNullable<Awaited<ReturnType<typeof updatePackagingBatch>>>
+    export type UpdatePackagingBatchMutationBody = BodyType<PackagingBatchInput>
+    export type UpdatePackagingBatchMutationError = ErrorType<unknown>
+    export type UpdatePackagingBatchMutationVariables = {id: string;data: BodyType<PackagingBatchInput>}
+
+    export const useUpdatePackagingBatch = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePackagingBatch>>, TError,UpdatePackagingBatchMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updatePackagingBatch>>,
+        TError,
+        UpdatePackagingBatchMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdatePackagingBatchMutationOptions(options));
+    }
+
+export const getSearchPackagingTraceUrl = () => {
+
+
+
+
+  return `/api/packaging/search`
+}
+
+export const searchPackagingTrace = async (packagingSearchInput: PackagingSearchInput, options?: Parameters<typeof customFetch>[1]): Promise<PackagingSearchResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PackagingSearchResult>(getSearchPackagingTraceUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(packagingSearchInput)
+  }
+);}
+
+
+
+
+
+export const getSearchPackagingTraceMutationKey = () => ['searchPackagingTrace'] as const;
+
+export const getSearchPackagingTraceMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof searchPackagingTrace>>, TError,SearchPackagingTraceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof searchPackagingTrace>>, TError,SearchPackagingTraceMutationVariables, TContext> => {
+
+const mutationKey = getSearchPackagingTraceMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof searchPackagingTrace>>, SearchPackagingTraceMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  searchPackagingTrace(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SearchPackagingTraceMutationResult = NonNullable<Awaited<ReturnType<typeof searchPackagingTrace>>>
+    export type SearchPackagingTraceMutationBody = BodyType<PackagingSearchInput>
+    export type SearchPackagingTraceMutationError = ErrorType<unknown>
+    export type SearchPackagingTraceMutationVariables = {data: BodyType<PackagingSearchInput>}
+
+    export const useSearchPackagingTrace = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof searchPackagingTrace>>, TError,SearchPackagingTraceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof searchPackagingTrace>>,
+        TError,
+        SearchPackagingTraceMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSearchPackagingTraceMutationOptions(options));
+    }
 
 export const getListQualityActionsUrl = () => {
 

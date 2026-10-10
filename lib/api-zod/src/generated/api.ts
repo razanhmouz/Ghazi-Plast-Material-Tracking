@@ -8,6 +8,260 @@
 import * as zod from 'zod';
 
 
+export const listPackagingBatchesResponseOneLotIdMax = 100;
+
+export const listPackagingBatchesResponseOneMaterialNameMax = 200;
+
+export const listPackagingBatchesResponseOneSupplierNameMax = 200;
+
+export const listPackagingBatchesResponseOneSupplierCountryMax = 100;
+
+export const listPackagingBatchesResponseOneSupplierContactMax = 200;
+
+export const listPackagingBatchesResponseOneQuantityMin = 0;
+export const listPackagingBatchesResponseOneQuantityMax = 1000000000;
+
+export const listPackagingBatchesResponseOneDocumentRefMax = 300;
+
+export const listPackagingBatchesResponseOneComplianceNotesMax = 3000;
+
+export const listPackagingBatchesResponseOneFinishedBatchesItemMax = 100;
+
+export const listPackagingBatchesResponseOneFinishedBatchesMax = 100;
+
+export const listPackagingBatchesResponseOneDestinationsItemMax = 200;
+
+export const listPackagingBatchesResponseOneDestinationsMax = 100;
+
+
+
+export const ListPackagingBatchesResponseItem = zod.object({
+  "lotId": zod.string().min(1).max(listPackagingBatchesResponseOneLotIdMax),
+  "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
+  "materialName": zod.string().min(1).max(listPackagingBatchesResponseOneMaterialNameMax),
+  "supplierName": zod.string().min(1).max(listPackagingBatchesResponseOneSupplierNameMax),
+  "supplierCountry": zod.string().max(listPackagingBatchesResponseOneSupplierCountryMax),
+  "supplierContact": zod.string().max(listPackagingBatchesResponseOneSupplierContactMax),
+  "quantity": zod.number().min(listPackagingBatchesResponseOneQuantityMin).max(listPackagingBatchesResponseOneQuantityMax),
+  "unit": zod.enum(['kg', 'liters', 'rolls', 'sheets']),
+  "status": zod.enum(['pending', 'released', 'hold']),
+  "complianceStatus": zod.enum(['pending', 'documented', 'review_required']),
+  "documentRef": zod.string().max(listPackagingBatchesResponseOneDocumentRefMax),
+  "complianceNotes": zod.string().max(listPackagingBatchesResponseOneComplianceNotesMax),
+  "finishedBatches": zod.array(zod.string().min(1).max(listPackagingBatchesResponseOneFinishedBatchesItemMax)).max(listPackagingBatchesResponseOneFinishedBatchesMax),
+  "destinations": zod.array(zod.string().min(1).max(listPackagingBatchesResponseOneDestinationsItemMax)).max(listPackagingBatchesResponseOneDestinationsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "demo": zod.boolean(),
+  "updatedAt": zod.string()
+}))
+export const ListPackagingBatchesResponse = zod.array(ListPackagingBatchesResponseItem)
+
+
+export const createPackagingBatchBodyLotIdMax = 100;
+
+export const createPackagingBatchBodyMaterialNameMax = 200;
+
+export const createPackagingBatchBodySupplierNameMax = 200;
+
+export const createPackagingBatchBodySupplierCountryMax = 100;
+
+export const createPackagingBatchBodySupplierContactMax = 200;
+
+export const createPackagingBatchBodyQuantityMin = 0;
+export const createPackagingBatchBodyQuantityMax = 1000000000;
+
+export const createPackagingBatchBodyDocumentRefMax = 300;
+
+export const createPackagingBatchBodyComplianceNotesMax = 3000;
+
+export const createPackagingBatchBodyFinishedBatchesItemMax = 100;
+
+export const createPackagingBatchBodyFinishedBatchesMax = 100;
+
+export const createPackagingBatchBodyDestinationsItemMax = 200;
+
+export const createPackagingBatchBodyDestinationsMax = 100;
+
+
+
+export const CreatePackagingBatchBody = zod.object({
+  "lotId": zod.string().min(1).max(createPackagingBatchBodyLotIdMax),
+  "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
+  "materialName": zod.string().min(1).max(createPackagingBatchBodyMaterialNameMax),
+  "supplierName": zod.string().min(1).max(createPackagingBatchBodySupplierNameMax),
+  "supplierCountry": zod.string().max(createPackagingBatchBodySupplierCountryMax),
+  "supplierContact": zod.string().max(createPackagingBatchBodySupplierContactMax),
+  "quantity": zod.number().min(createPackagingBatchBodyQuantityMin).max(createPackagingBatchBodyQuantityMax),
+  "unit": zod.enum(['kg', 'liters', 'rolls', 'sheets']),
+  "status": zod.enum(['pending', 'released', 'hold']),
+  "complianceStatus": zod.enum(['pending', 'documented', 'review_required']),
+  "documentRef": zod.string().max(createPackagingBatchBodyDocumentRefMax),
+  "complianceNotes": zod.string().max(createPackagingBatchBodyComplianceNotesMax),
+  "finishedBatches": zod.array(zod.string().min(1).max(createPackagingBatchBodyFinishedBatchesItemMax)).max(createPackagingBatchBodyFinishedBatchesMax),
+  "destinations": zod.array(zod.string().min(1).max(createPackagingBatchBodyDestinationsItemMax)).max(createPackagingBatchBodyDestinationsMax)
+})
+
+export const createPackagingBatchResponseOneLotIdMax = 100;
+
+export const createPackagingBatchResponseOneMaterialNameMax = 200;
+
+export const createPackagingBatchResponseOneSupplierNameMax = 200;
+
+export const createPackagingBatchResponseOneSupplierCountryMax = 100;
+
+export const createPackagingBatchResponseOneSupplierContactMax = 200;
+
+export const createPackagingBatchResponseOneQuantityMin = 0;
+export const createPackagingBatchResponseOneQuantityMax = 1000000000;
+
+export const createPackagingBatchResponseOneDocumentRefMax = 300;
+
+export const createPackagingBatchResponseOneComplianceNotesMax = 3000;
+
+export const createPackagingBatchResponseOneFinishedBatchesItemMax = 100;
+
+export const createPackagingBatchResponseOneFinishedBatchesMax = 100;
+
+export const createPackagingBatchResponseOneDestinationsItemMax = 200;
+
+export const createPackagingBatchResponseOneDestinationsMax = 100;
+
+
+
+export const CreatePackagingBatchResponse = zod.object({
+  "lotId": zod.string().min(1).max(createPackagingBatchResponseOneLotIdMax),
+  "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
+  "materialName": zod.string().min(1).max(createPackagingBatchResponseOneMaterialNameMax),
+  "supplierName": zod.string().min(1).max(createPackagingBatchResponseOneSupplierNameMax),
+  "supplierCountry": zod.string().max(createPackagingBatchResponseOneSupplierCountryMax),
+  "supplierContact": zod.string().max(createPackagingBatchResponseOneSupplierContactMax),
+  "quantity": zod.number().min(createPackagingBatchResponseOneQuantityMin).max(createPackagingBatchResponseOneQuantityMax),
+  "unit": zod.enum(['kg', 'liters', 'rolls', 'sheets']),
+  "status": zod.enum(['pending', 'released', 'hold']),
+  "complianceStatus": zod.enum(['pending', 'documented', 'review_required']),
+  "documentRef": zod.string().max(createPackagingBatchResponseOneDocumentRefMax),
+  "complianceNotes": zod.string().max(createPackagingBatchResponseOneComplianceNotesMax),
+  "finishedBatches": zod.array(zod.string().min(1).max(createPackagingBatchResponseOneFinishedBatchesItemMax)).max(createPackagingBatchResponseOneFinishedBatchesMax),
+  "destinations": zod.array(zod.string().min(1).max(createPackagingBatchResponseOneDestinationsItemMax)).max(createPackagingBatchResponseOneDestinationsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "demo": zod.boolean(),
+  "updatedAt": zod.string()
+}))
+
+
+export const UpdatePackagingBatchParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const updatePackagingBatchBodyLotIdMax = 100;
+
+export const updatePackagingBatchBodyMaterialNameMax = 200;
+
+export const updatePackagingBatchBodySupplierNameMax = 200;
+
+export const updatePackagingBatchBodySupplierCountryMax = 100;
+
+export const updatePackagingBatchBodySupplierContactMax = 200;
+
+export const updatePackagingBatchBodyQuantityMin = 0;
+export const updatePackagingBatchBodyQuantityMax = 1000000000;
+
+export const updatePackagingBatchBodyDocumentRefMax = 300;
+
+export const updatePackagingBatchBodyComplianceNotesMax = 3000;
+
+export const updatePackagingBatchBodyFinishedBatchesItemMax = 100;
+
+export const updatePackagingBatchBodyFinishedBatchesMax = 100;
+
+export const updatePackagingBatchBodyDestinationsItemMax = 200;
+
+export const updatePackagingBatchBodyDestinationsMax = 100;
+
+
+
+export const UpdatePackagingBatchBody = zod.object({
+  "lotId": zod.string().min(1).max(updatePackagingBatchBodyLotIdMax),
+  "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
+  "materialName": zod.string().min(1).max(updatePackagingBatchBodyMaterialNameMax),
+  "supplierName": zod.string().min(1).max(updatePackagingBatchBodySupplierNameMax),
+  "supplierCountry": zod.string().max(updatePackagingBatchBodySupplierCountryMax),
+  "supplierContact": zod.string().max(updatePackagingBatchBodySupplierContactMax),
+  "quantity": zod.number().min(updatePackagingBatchBodyQuantityMin).max(updatePackagingBatchBodyQuantityMax),
+  "unit": zod.enum(['kg', 'liters', 'rolls', 'sheets']),
+  "status": zod.enum(['pending', 'released', 'hold']),
+  "complianceStatus": zod.enum(['pending', 'documented', 'review_required']),
+  "documentRef": zod.string().max(updatePackagingBatchBodyDocumentRefMax),
+  "complianceNotes": zod.string().max(updatePackagingBatchBodyComplianceNotesMax),
+  "finishedBatches": zod.array(zod.string().min(1).max(updatePackagingBatchBodyFinishedBatchesItemMax)).max(updatePackagingBatchBodyFinishedBatchesMax),
+  "destinations": zod.array(zod.string().min(1).max(updatePackagingBatchBodyDestinationsItemMax)).max(updatePackagingBatchBodyDestinationsMax)
+})
+
+export const updatePackagingBatchResponseOneLotIdMax = 100;
+
+export const updatePackagingBatchResponseOneMaterialNameMax = 200;
+
+export const updatePackagingBatchResponseOneSupplierNameMax = 200;
+
+export const updatePackagingBatchResponseOneSupplierCountryMax = 100;
+
+export const updatePackagingBatchResponseOneSupplierContactMax = 200;
+
+export const updatePackagingBatchResponseOneQuantityMin = 0;
+export const updatePackagingBatchResponseOneQuantityMax = 1000000000;
+
+export const updatePackagingBatchResponseOneDocumentRefMax = 300;
+
+export const updatePackagingBatchResponseOneComplianceNotesMax = 3000;
+
+export const updatePackagingBatchResponseOneFinishedBatchesItemMax = 100;
+
+export const updatePackagingBatchResponseOneFinishedBatchesMax = 100;
+
+export const updatePackagingBatchResponseOneDestinationsItemMax = 200;
+
+export const updatePackagingBatchResponseOneDestinationsMax = 100;
+
+
+
+export const UpdatePackagingBatchResponse = zod.object({
+  "lotId": zod.string().min(1).max(updatePackagingBatchResponseOneLotIdMax),
+  "category": zod.enum(['ink', 'adhesive', 'coating', 'raw_material']),
+  "materialName": zod.string().min(1).max(updatePackagingBatchResponseOneMaterialNameMax),
+  "supplierName": zod.string().min(1).max(updatePackagingBatchResponseOneSupplierNameMax),
+  "supplierCountry": zod.string().max(updatePackagingBatchResponseOneSupplierCountryMax),
+  "supplierContact": zod.string().max(updatePackagingBatchResponseOneSupplierContactMax),
+  "quantity": zod.number().min(updatePackagingBatchResponseOneQuantityMin).max(updatePackagingBatchResponseOneQuantityMax),
+  "unit": zod.enum(['kg', 'liters', 'rolls', 'sheets']),
+  "status": zod.enum(['pending', 'released', 'hold']),
+  "complianceStatus": zod.enum(['pending', 'documented', 'review_required']),
+  "documentRef": zod.string().max(updatePackagingBatchResponseOneDocumentRefMax),
+  "complianceNotes": zod.string().max(updatePackagingBatchResponseOneComplianceNotesMax),
+  "finishedBatches": zod.array(zod.string().min(1).max(updatePackagingBatchResponseOneFinishedBatchesItemMax)).max(updatePackagingBatchResponseOneFinishedBatchesMax),
+  "destinations": zod.array(zod.string().min(1).max(updatePackagingBatchResponseOneDestinationsItemMax)).max(updatePackagingBatchResponseOneDestinationsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "demo": zod.boolean(),
+  "updatedAt": zod.string()
+}))
+
+
+export const searchPackagingTraceBodyQueryMax = 1500;
+
+
+
+export const SearchPackagingTraceBody = zod.object({
+  "query": zod.string().min(1).max(searchPackagingTraceBodyQueryMax)
+})
+
+export const SearchPackagingTraceResponse = zod.object({
+  "answer": zod.string(),
+  "batchIds": zod.array(zod.string())
+})
+
+
 export const ListQualityActionsResponseItem = zod.object({
   "requestId": zod.string(),
   "action": zod.enum(['recall', 'release']),

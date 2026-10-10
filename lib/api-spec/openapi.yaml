@@ -11,6 +11,63 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /packaging/batches:
+    get:
+      operationId: listPackagingBatches
+      responses:
+        "200":
+          description: Packaging material batches
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PackagingBatch" }
+    post:
+      operationId: createPackagingBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PackagingBatchInput" }
+      responses:
+        "201":
+          description: Created material batch
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PackagingBatch" }
+  /packaging/batches/{id}:
+    put:
+      operationId: updatePackagingBatch
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PackagingBatchInput" }
+      responses:
+        "200":
+          description: Updated material batch
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PackagingBatch" }
+  /packaging/search:
+    post:
+      operationId: searchPackagingTrace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PackagingSearchInput" }
+      responses:
+        "200":
+          description: AI answer grounded in current batch records
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PackagingSearchResult" }
   /quality-actions:
     get:
       operationId: listQualityActions
@@ -117,6 +174,52 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    PackagingBatchInput:
+      type: object
+      required: [lotId, category, materialName, supplierName, supplierCountry, supplierContact, quantity, unit, status, complianceStatus, documentRef, complianceNotes, finishedBatches, destinations]
+      properties:
+        lotId: { type: string, minLength: 1, maxLength: 100 }
+        category: { type: string, enum: [ink, adhesive, coating, raw_material] }
+        materialName: { type: string, minLength: 1, maxLength: 200 }
+        supplierName: { type: string, minLength: 1, maxLength: 200 }
+        supplierCountry: { type: string, maxLength: 100 }
+        supplierContact: { type: string, maxLength: 200 }
+        quantity: { type: number, minimum: 0, maximum: 1000000000 }
+        unit: { type: string, enum: [kg, liters, rolls, sheets] }
+        status: { type: string, enum: [pending, released, hold] }
+        complianceStatus: { type: string, enum: [pending, documented, review_required] }
+        documentRef: { type: string, maxLength: 300 }
+        complianceNotes: { type: string, maxLength: 3000 }
+        finishedBatches:
+          type: array
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 100 }
+        destinations:
+          type: array
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 200 }
+    PackagingBatch:
+      allOf:
+        - $ref: "#/components/schemas/PackagingBatchInput"
+        - type: object
+          required: [id, demo, updatedAt]
+          properties:
+            id: { type: string }
+            demo: { type: boolean }
+            updatedAt: { type: string }
+    PackagingSearchInput:
+      type: object
+      required: [query]
+      properties:
+        query: { type: string, minLength: 1, maxLength: 1500 }
+    PackagingSearchResult:
+      type: object
+      required: [answer, batchIds]
+      properties:
+        answer: { type: string }
+        batchIds:
+          type: array
+          items: { type: string }
     ChecklistEntry:
       type: object
       required: [label, result, notes]

@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import TracePage from '@/pages/trace';
+import PackagingTraceabilityPage from '@/pages/packaging-traceability';
 import {
   Route,
   Switch,
@@ -21,6 +22,7 @@ function Router() {
     <RoutedErrorBoundary>
       <Switch>
         <Route path="/" component={TracePage} />
+        <Route path="/packaging-traceability" component={PackagingTraceabilityPage} />
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>

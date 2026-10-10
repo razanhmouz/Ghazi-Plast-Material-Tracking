@@ -14,8 +14,8 @@ import { errMessage, errStatus, fmt, InspPill, invalidateTrace } from "@/lib/tra
 
 type Action = QualityActionInput["action"];
 const ACT: Record<Action, { label: string; verb: string; Icon: typeof Gavel; cls: string }> = {
-  recall: { label: "Issue Recall Order", verb: "Recall order", Icon: OctagonAlert, cls: "bg-[hsl(356_60%_94%)] text-destructive border-[hsl(356_45%_82%)]" },
-  release: { label: "Release Shipment", verb: "Release instruction", Icon: PackageCheck, cls: "bg-[hsl(158_42%_92%)] text-[hsl(158_50%_24%)] border-[hsl(158_35%_78%)]" },
+  recall: { label: "Issue Recall Order", verb: "Recall order", Icon: OctagonAlert, cls: "tone-bad" },
+  release: { label: "Release Shipment", verb: "Release instruction", Icon: PackageCheck, cls: "tone-ok" },
 };
 
 export const DISCLAIMER = "the tool supports human decision-making; it does not automatically notify customers or initiate a product recall.";
@@ -65,13 +65,13 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
   };
 
   return (
-    <section data-testid="panel-quality-decision" className="rise rounded-xl border-2 border-sidebar bg-card overflow-hidden">
-      <div className="bg-sidebar text-sidebar-foreground px-4 md:px-5 py-3 flex flex-wrap items-center gap-2">
+    <section data-testid="panel-quality-decision" className="rise rounded-xl border border-primary/30 bg-card overflow-hidden">
+      <div className="bg-sidebar text-sidebar-foreground border-b px-4 md:px-5 py-3 flex flex-wrap items-center gap-2">
         <Gavel className="h-4 w-4 text-sidebar-primary" />
         <h2 className="font-semibold tracking-tight">Quality Decision Panel</h2>
         <span className="font-mono text-[10px] uppercase tracking-wider opacity-70">For the Quality Manager · identity not verified in this shared demo</span>
       </div>
-      <p data-testid="text-disclaimer" className="px-4 md:px-5 py-2.5 text-sm border-b bg-[hsl(38_90%_95%)] text-[hsl(28_60%_25%)] flex gap-2">
+      <p data-testid="text-disclaimer" className="px-4 md:px-5 py-2.5 text-sm border-b tone-warn border-x-0 border-t-0 flex gap-2">
         <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />{DISCLAIMER}
       </p>
       <div className="grid lg:grid-cols-[1.15fr_1fr]">
@@ -83,7 +83,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
                 const A = ACT[k];
                 return (
                   <button key={k} type="button" data-testid={`button-action-${k}`} onClick={() => setAction(k)}
-                    className={cn("flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm font-semibold text-left transition-all", action === k ? A.cls + " ring-2 ring-offset-1 ring-current/20" : "bg-background hover:border-primary")}>
+                    className={cn("flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm font-semibold text-left transition-all", action === k ? A.cls + " ring-1 ring-current/30" : "bg-background hover:border-primary")}>
                     <A.Icon className="h-4 w-4" />{A.label}
                   </button>
                 );
@@ -98,7 +98,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
                 const on = sel.includes(r.id);
                 const blocked = action === "release" && r.inspectionResult !== "passed";
                 return (
-                  <label key={r.id} data-testid={`option-batch-${r.id}`} className={cn("flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-colors", on ? "border-primary bg-[hsl(192_30%_95%)]" : "bg-background hover:bg-secondary/50")}>
+                  <label key={r.id} data-testid={`option-batch-${r.id}`} className={cn("flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-colors", on ? "border-primary bg-primary/5" : "bg-background hover:bg-secondary/50")}>
                     <input type="checkbox" data-testid={`checkbox-batch-${r.id}`} checked={on} onChange={() => toggle(r.id)} className="h-4 w-4 accent-[hsl(var(--primary))]" />
                     <span className="font-mono font-semibold text-sm">{r.id}</span>
                     <span className="font-mono text-xs text-muted-foreground tabular-nums">{fmt(r.quantity)} cups</span>

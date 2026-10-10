@@ -9,14 +9,14 @@ export type Rel = RunUpdate["releaseDecision"];
 
 export const INSP: Record<Insp, { label: string; cls: string; Icon: typeof CircleCheck }> = {
   pending: { label: "Pending", cls: "bg-muted text-muted-foreground border-border", Icon: CircleDashed },
-  passed: { label: "Passed", cls: "bg-[hsl(158_42%_92%)] text-[hsl(158_50%_24%)] border-[hsl(158_35%_78%)]", Icon: CircleCheck },
-  failed: { label: "Failed", cls: "bg-[hsl(356_60%_94%)] text-destructive border-[hsl(356_45%_82%)]", Icon: CircleX },
+  passed: { label: "Passed", cls: "tone-ok", Icon: CircleCheck },
+  failed: { label: "Failed", cls: "tone-bad", Icon: CircleX },
 };
 export const REL: Record<Rel, { label: string; cls: string; bar: string }> = {
-  pending: { label: "Awaiting decision", cls: "bg-muted text-muted-foreground border-border", bar: "hsl(200 12% 62%)" },
-  released: { label: "Released", cls: "bg-[hsl(158_42%_92%)] text-[hsl(158_50%_24%)] border-[hsl(158_35%_78%)]", bar: "hsl(158 42% 36%)" },
-  hold: { label: "On hold", cls: "bg-[hsl(36_95%_90%)] text-[hsl(28_80%_30%)] border-[hsl(34_80%_72%)]", bar: "hsl(32 92% 52%)" },
-  rejected: { label: "Rejected", cls: "bg-[hsl(356_60%_94%)] text-destructive border-[hsl(356_45%_82%)]", bar: "hsl(356 62% 42%)" },
+  pending: { label: "Awaiting decision", cls: "bg-muted text-muted-foreground border-border", bar: "hsl(214 22% 50%)" },
+  released: { label: "Released", cls: "tone-ok", bar: "hsl(158 64% 50%)" },
+  hold: { label: "On hold", cls: "tone-warn", bar: "hsl(45 96% 52%)" },
+  rejected: { label: "Rejected", cls: "tone-bad", bar: "hsl(356 75% 56%)" },
 };
 export const fmt = (n: number) => n.toLocaleString("en-US");
 

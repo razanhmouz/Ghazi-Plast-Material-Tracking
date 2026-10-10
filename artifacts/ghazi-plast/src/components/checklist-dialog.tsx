@@ -94,7 +94,7 @@ export function ChecklistDialog({ run, onClose }: { run: Run | null; onClose: ()
               ))}
             </div>
             {passBlocked && <p className="text-xs text-destructive mt-1.5">This batch is released. Change its release decision manually in the batch editor before recording a non-passed inspection.</p>}
-            {anyFailed && overall !== "failed" && <p className="text-xs text-[hsl(28_70%_28%)] mt-1.5">A check is marked failed. Confirm the overall result is correct.</p>}
+            {anyFailed && overall !== "failed" && <p className="text-xs text-accent mt-1.5">A check is marked failed. Confirm the overall result is correct.</p>}
           </div>
         </div>
         <DialogFooter>

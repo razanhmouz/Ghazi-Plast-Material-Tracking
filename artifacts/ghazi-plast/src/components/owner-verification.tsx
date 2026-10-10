@@ -47,7 +47,7 @@ function VerificationReport() {
     customers.get("Customer A") === 2500 && customers.get("Customer B") === 1500 && customers.get("Customer C") === 2000;
   return (
     <div className="space-y-4 text-sm" data-testid="owner-verification-report">
-      <p role="status" className={`rounded-lg border p-3 font-semibold ${matches ? "bg-secondary text-primary" : "text-destructive"}`}>
+      <p role="status" className={`rounded-lg border p-3 font-semibold ${matches ? "tone-ok" : "tone-bad"}`}>
         {matches ? "Records match: 7,000 cups and 3 shipping destinations." : "Discrepancy: current records do not match the expected P-77 quantities or destinations."}
       </p>
       <section>

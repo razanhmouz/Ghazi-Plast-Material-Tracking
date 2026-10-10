@@ -97,10 +97,6 @@ export default function TracePage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 md:px-6 py-5 space-y-4">
-        <section className="rise">
-          <p className="text-xs text-muted-foreground mt-1">Owner verification: read-only check of P-77 quantities and customer destinations.</p>
-        </section>
-
         <WorkflowProgress resultsReady={Boolean(search && !isFetching && !isError && materials.length > 0)} />
 
         <section className="grid gap-3 lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] rise">

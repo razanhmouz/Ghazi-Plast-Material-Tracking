@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
 import { db, packagingBatches } from "@workspace/db";
-import { eq, desc, sql } from "drizzle-orm";
+import { and, eq, desc, sql } from "drizzle-orm";
 import {
   CreatePackagingBatchBody, UpdatePackagingBatchBody, UpdatePackagingBatchParams,
   ListPackagingBatchesResponse, CreatePackagingBatchResponse, UpdatePackagingBatchResponse,
@@ -76,14 +76,25 @@ router.put("/packaging/batches/:id", async (req, res): Promise<void> => {
   const error = validate(body.data);
   if (error) { res.status(400).json({ error }); return; }
   try {
-    const normalized = normalize(body.data);
+    const { expectedUpdatedAt, ...input } = body.data;
+    const normalized = normalize(input);
     const [row] = await db.update(packagingBatches).set({
       lotId: normalized.lotId,
       // JSON merge keeps allocations when older clients omit the new field.
       data: sql`${packagingBatches.data} || ${JSON.stringify(normalized.data)}::jsonb`,
-      updatedAt: new Date(),
-    }).where(eq(packagingBatches.id, params.data.id)).returning();
-    if (!row) { res.status(404).json({ error: "Material batch not found." }); return; }
+      // Match the millisecond precision exposed by serialize(), including legacy
+      // database-generated timestamps, and advance even for same-ms saves.
+      updatedAt: sql`greatest(date_trunc('milliseconds', clock_timestamp()), date_trunc('milliseconds', ${packagingBatches.updatedAt}) + interval '1 millisecond')`,
+    }).where(and(
+      eq(packagingBatches.id, params.data.id),
+      sql`date_trunc('milliseconds', ${packagingBatches.updatedAt}) = ${expectedUpdatedAt}::timestamptz`,
+    )).returning();
+    if (!row) {
+      const [current] = await db.select().from(packagingBatches).where(eq(packagingBatches.id, params.data.id));
+      if (!current) { res.status(404).json({ error: "Material batch not found." }); return; }
+      res.status(409).json({ code: "EDIT_CONFLICT", error: "Another editor saved this record. Review the latest record before saving again.", current: serialize(current) });
+      return;
+    }
     res.json(UpdatePackagingBatchResponse.parse(serialize(row)));
   } catch (error) {
     if (isUniqueViolation(error)) { res.status(409).json({ error: "Another material batch already uses this lot ID." }); return; }

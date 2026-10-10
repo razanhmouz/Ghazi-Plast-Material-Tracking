@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCreatePackagingBatch, useUpdatePackagingBatch, getListPackagingBatchesQueryKey, type PackagingBatch, type PackagingBatchInput } from "@workspace/api-client-react";
+import { useCreatePackagingBatch, useUpdatePackagingBatch, listPackagingBatches, getListPackagingBatchesQueryKey, type PackagingBatch, type PackagingBatchInput } from "@workspace/api-client-react";
+import { PackagingConflictReview } from "./packaging-conflict-review";
 import { Factory, Layers, Package, Truck, ShieldAlert, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AllocationFields, AllocationTrace } from "./packaging-allocations";
@@ -36,15 +37,30 @@ export function PackagingEditor({ batch, close, saved }: { batch: PackagingBatch
   const [finished,setFinished] = useState(batch?.finishedBatches.join("\n") ?? "");
   const [destinations,setDestinations] = useState(batch?.destinations.join("\n") ?? "");
   const [error,setError] = useState("");
+  const [expectedUpdatedAt,setExpectedUpdatedAt] = useState(batch?.updatedAt ?? "");
+  const [conflict,setConflict] = useState<PackagingBatch | null>(null);
+  const [reloading,setReloading] = useState(false);
   const [allocations,setAllocations] = useState(batch?.allocations ?? []);
   const create = useCreatePackagingBatch(); const update = useUpdatePackagingBatch(); const qc = useQueryClient();
-  const busy = create.isPending || update.isPending;
+  const busy = create.isPending || update.isPending || reloading;
+  const reloadLatest = async () => {
+    setReloading(true);
+    try {
+      const records = await listPackagingBatches();
+      const current = records.find(r => r.id === batch?.id);
+      if (!current) throw new Error("This record no longer exists. Your draft is still available.");
+      setConflict(current);
+      qc.setQueryData(getListPackagingBatchesQueryKey(), records);
+      setError("");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not reload. Your draft is preserved."); }
+    finally { setReloading(false); }
+  };
   const blocked = form.complianceStatus === "documented" && !form.documentRef.trim() ? "A document reference is required for a documented declaration." : form.status === "released" && form.complianceStatus !== "documented" ? "Release requires a documented declaration with a document reference." : "";
   const field = (key: keyof PackagingBatchInput, value: string) => setForm(f => ({...f,[key]:value}));
   const text = (key: "lotId"|"materialName"|"supplierName"|"supplierCountry"|"supplierContact"|"documentRef", label: string, max: number, required = false) => <label className="ptc-field">{label}<input data-testid={`input-packaging-${key}`} required={required} maxLength={max} value={form[key]} onChange={e => field(key,e.target.value)}/></label>;
   const select = (key: "category"|"unit"|"status"|"complianceStatus", label: string, options: string[]) => <label className="ptc-field">{label}<select data-testid={`select-packaging-${key}`} value={form[key]} onChange={e => field(key,e.target.value)}>{options.map(o => <option key={o} value={o}>{packagingLabels[o] || o}</option>)}</select></label>;
   const submit = () => {
-    setError(""); if (blocked) return;
+    setError(""); if (blocked || conflict || busy) return;
     const split = (s: string) => [...new Set(s.split("\n").map(v => v.trim()).filter(Boolean))];
     const lots = split(finished), customers = split(destinations);
     if (lots.length > 100 || customers.length > 100 || lots.some(s=>s.length>100) || customers.some(s=>s.length>200)) {setError("Use at most 100 links; finished lot IDs may be 100 characters and destinations 200 characters each.");return;}
@@ -59,11 +75,22 @@ export function PackagingEditor({ batch, close, saved }: { batch: PackagingBatch
       pairs.add(pair); units.set(lot,a.unit);
     }
     const data: PackagingBatchInput = {...form,lotId:form.lotId.trim(),materialName:form.materialName.trim(),supplierName:form.supplierName.trim(),documentRef:form.documentRef.trim(),quantity:Number(quantity),finishedBatches:lots,destinations:customers,allocations};
-    const options = {onSuccess: (b: PackagingBatch) => {qc.setQueryData<PackagingBatch[]>(getListPackagingBatchesQueryKey(),old => old ? (old.some(r=>r.id===b.id) ? old.map(r=>r.id===b.id?b:r) : [b,...old]) : [b]);void qc.invalidateQueries({queryKey:getListPackagingBatchesQueryKey()});saved(b);},onError:(e:unknown)=>setError(e instanceof Error ? e.message : "The record could not be saved. Your entries are preserved; try again.")};
-    if(batch) update.mutate({id:batch.id,data},options);else create.mutate({data},options);
+    const options = {onSuccess: (b: PackagingBatch) => {qc.setQueryData<PackagingBatch[]>(getListPackagingBatchesQueryKey(),old => old ? (old.some(r=>r.id===b.id) ? old.map(r=>r.id===b.id?b:r) : [b,...old]) : [b]);void qc.invalidateQueries({queryKey:getListPackagingBatchesQueryKey()});saved(b);},onError:(e:unknown)=>{
+      const failure = e as { status?: number; data?: { code?: string; current?: PackagingBatch } };
+      if (failure?.status === 409 && failure.data?.code === "EDIT_CONFLICT" && failure.data.current) {
+        setConflict(failure.data.current);
+        setError("Another editor saved this record. Your unsaved entries have been preserved.");
+      } else setError(e instanceof Error ? e.message : "The record could not be saved. Your entries are preserved; try again.");
+    }};
+    if(batch) update.mutate({id:batch.id,data:{...data,expectedUpdatedAt}},options);else create.mutate({data},options);
   };
   return <Dialog open onOpenChange={open=>!open&&!busy&&close()}><DialogContent className="ptc ptc-dialog" style={{minHeight:0}} onEscapeKeyDown={e=>busy&&e.preventDefault()} onInteractOutside={e=>busy&&e.preventDefault()}>
     <DialogTitle className="ptc-dialog-title">{batch?"Edit material batch":"Register material batch"}</DialogTitle><DialogDescription className="ptc-dialog-desc">Capture the source, quality declaration and downstream links in one record.</DialogDescription>
+    {conflict && <PackagingConflictReview current={conflict} busy={busy} reload={reloadLatest} reconcile={()=>{
+      setExpectedUpdatedAt(conflict.updatedAt);
+      setConflict(null);
+      setError("Your draft is unchanged. Reconcile the fields and allocations below before saving; saving replaces the reviewed record.");
+    }}/>}
     <form onSubmit={e=>{e.preventDefault();submit();}}><fieldset disabled={busy}><div className="ptc-form-grid">
       <div className="ptc-form-section">01 / Material identification</div>
       {text("lotId","Lot ID *",100,true)}{select("category","Category",["ink","adhesive","coating","raw_material"])}{text("materialName","Material name *",200,true)}
@@ -78,6 +105,6 @@ export function PackagingEditor({ batch, close, saved }: { batch: PackagingBatch
     </div></fieldset>
     <div className="ptc-note"><ShieldAlert/>These are human-entered declarations, not verified legal compliance. “Documented” records a reference only; it does not certify food-contact suitability.</div>
     {(blocked||error)&&<p role="alert" className="ptc-error">{blocked||error}</p>}
-    <div className="ptc-form-actions"><button type="button" className="ptc-btn" disabled={busy} onClick={close}>Cancel</button><button data-testid="button-save-packaging" className="ptc-btn ptc-btn-primary" disabled={busy||!!blocked}>{busy?"Saving record…":batch?"Save changes":"Create batch"}</button></div></form>
+    <div className="ptc-form-actions"><button type="button" className="ptc-btn" disabled={busy} onClick={close}>Cancel</button><button data-testid="button-save-packaging" className="ptc-btn ptc-btn-primary" disabled={busy||!!blocked||!!conflict}>{busy?"Saving record…":batch?"Save changes":"Create batch"}</button></div></form>
   </DialogContent></Dialog>;
 }

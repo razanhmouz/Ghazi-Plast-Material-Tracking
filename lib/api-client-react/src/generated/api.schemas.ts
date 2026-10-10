@@ -213,12 +213,21 @@ export interface PackagingBatchInput {
   allocations?: PackagingAllocation[];
 }
 
+export type PackagingBatchUpdate = PackagingBatchInput & {
+  /** updatedAt from the record the editor last reviewed */
+  expectedUpdatedAt: string;
+};
 export type PackagingBatch = PackagingBatchInput & {
   id: string;
   demo: boolean;
   updatedAt: string;
 };
 
+export interface PackagingBatchConflict {
+  error: string;
+  code?: PackagingBatchConflictCode;
+  current?: PackagingBatch;
+}
 export interface PackagingSearchInput {
   /**
      * @minLength 1
@@ -443,3 +452,9 @@ export type GetTraceParams = {
 search?: string;
 };
 
+
+export type PackagingBatchConflictCode = typeof PackagingBatchConflictCode[keyof typeof PackagingBatchConflictCode];
+
+export const PackagingBatchConflictCode = {
+  EDIT_CONFLICT: 'EDIT_CONFLICT',
+} as const;

@@ -202,13 +202,20 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/PackagingBatchInput" }
+            schema: { $ref: "#/components/schemas/PackagingBatchUpdate" }
       responses:
         "200":
           description: Updated material batch
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PackagingBatch" }
+        "400": { description: Invalid or missing updatedAt precondition }
+        "404": { description: Material batch not found }
+        "409":
+          description: Stale edit or duplicate lot ID; stale edits include the current record
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PackagingBatchConflict" }
   /packaging/search:
     post:
       operationId: searchPackagingTrace
@@ -397,6 +404,23 @@ components:
         contentType: { type: string }
         size: { type: integer }
         createdAt: { type: string, format: date-time }
+    PackagingBatchUpdate:
+      allOf:
+        - $ref: "#/components/schemas/PackagingBatchInput"
+        - type: object
+          required: [expectedUpdatedAt]
+          properties:
+            expectedUpdatedAt:
+              type: string
+              format: date-time
+              description: updatedAt from the record the editor last reviewed
+    PackagingBatchConflict:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        code: { type: string, enum: [EDIT_CONFLICT] }
+        current: { $ref: "#/components/schemas/PackagingBatch" }
     PackagingBatchInput:
       type: object
       required: [lotId, category, materialName, supplierName, supplierCountry, supplierContact, quantity, unit, status, complianceStatus, documentRef, complianceNotes, finishedBatches, destinations]
@@ -552,4 +576,3 @@ components:
           type: string
       required:
         - status
-

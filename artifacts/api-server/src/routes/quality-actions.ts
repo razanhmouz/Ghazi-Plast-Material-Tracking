@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, productionRuns, qualityActions } from "@workspace/db";
 import { desc, eq, inArray } from "drizzle-orm";
-import { ListQualityActionsResponse, RecordQualityActionBody, RecordQualityActionResponse } from "@workspace/api-zod";
+import { ListQualityActionsResponse, RecordQualityActionBody, RecordQualityActionResponse, DeleteQualityActionParams } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 const serialize = (r: typeof qualityActions.$inferSelect) => ({...r, createdAt: r.createdAt.toISOString()});
@@ -36,6 +36,14 @@ router.post("/quality-actions", async (req, res): Promise<void> => {
   });
   if ("error" in result) { res.status(result.status ?? 400).json({error: result.error}); return; }
   res.json(RecordQualityActionResponse.parse(serialize(result.row)));
+});
+
+router.delete("/quality-actions/:requestId", async (req, res): Promise<void> => {
+  const params = DeleteQualityActionParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid decision identifier." }); return; }
+  const [deleted] = await db.delete(qualityActions).where(eq(qualityActions.requestId, params.data.requestId)).returning({ id: qualityActions.requestId });
+  if (!deleted) { res.status(404).json({ error: "This decision no longer exists." }); return; }
+  res.status(204).end();
 });
 
 export default router;

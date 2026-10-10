@@ -35,6 +35,19 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/QualityAction" }
+  /quality-actions/{requestId}:
+    delete:
+      operationId: deleteQualityAction
+      parameters:
+        - in: path
+          name: requestId
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 100 }
+      responses:
+        "204":
+          description: Selected decision deleted
+        "404":
+          description: Decision not found
   /trace:
     get:
       operationId: getTrace

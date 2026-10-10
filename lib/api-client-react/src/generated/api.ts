@@ -210,6 +210,74 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getRecordQualityActionMutationOptions(options));
     }
 
+export const getDeleteQualityActionUrl = (requestId: string,) => {
+
+
+
+
+  return `/api/quality-actions/${requestId}`
+}
+
+export const deleteQualityAction = async (requestId: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteQualityActionUrl(requestId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteQualityActionMutationKey = () => ['deleteQualityAction'] as const;
+
+export const getDeleteQualityActionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteQualityAction>>, TError,DeleteQualityActionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteQualityAction>>, TError,DeleteQualityActionMutationVariables, TContext> => {
+
+const mutationKey = getDeleteQualityActionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteQualityAction>>, DeleteQualityActionMutationVariables> = (props) => {
+          const {requestId} = props ?? {};
+
+          return  deleteQualityAction(requestId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteQualityActionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteQualityAction>>>
+
+    export type DeleteQualityActionMutationError = ErrorType<void>
+    export type DeleteQualityActionMutationVariables = {requestId: string}
+
+    export const useDeleteQualityAction = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteQualityAction>>, TError,DeleteQualityActionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteQualityAction>>,
+        TError,
+        DeleteQualityActionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteQualityActionMutationOptions(options));
+    }
+
 export const getGetTraceUrl = (params?: GetTraceParams,) => {
   const normalizedParams = new URLSearchParams();
 

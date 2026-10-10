@@ -44,6 +44,17 @@ export const RecordQualityActionResponse = zod.object({
 })
 
 
+export const deleteQualityActionPathRequestIdMax = 100;
+
+
+
+export const DeleteQualityActionParams = zod.object({
+  "requestId": zod.coerce.string().min(1).max(deleteQualityActionPathRequestIdMax)
+})
+
+export const DeleteQualityActionResponse = zod.void()
+
+
 export const GetTraceQueryParams = zod.object({
   "search": zod.coerce.string().optional()
 })

@@ -26,6 +26,12 @@ Quality Manager final actions are recorded internal instructions only, not autom
 
 **How to apply:** Keep a confirmed decision history separate from shipment status and quantities. Shared-demo manager labeling is not verified identity or access control.
 
+The user permits deletion of one selected decision-history record, with confirmation, rather than clearing all history.
+
+**Why:** The user explicitly chose “A selected decision” when asked about the delete button’s scope.
+
+**How to apply:** Keep deletion scoped to the selected record and separate from batch or shipment state; do not assume history must remain append-only.
+
 Adding a destination adds its quantity to batch production and shipped/inventory totals; it is not a transfer of existing stock. The new row’s Passed status is explicitly confirmed by staff and does not change batch inspection or release decisions.
 
 **Why:** The user requested newly added destinations to increase Batch Total and KPIs and display Passed; row confirmation avoids silently inventing a batch-wide quality approval.

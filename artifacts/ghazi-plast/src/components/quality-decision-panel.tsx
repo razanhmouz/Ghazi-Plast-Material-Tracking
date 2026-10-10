@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useListQualityActions, useRecordQualityAction, getListQualityActionsQueryKey } from "@workspace/api-client-react";
+import { useListQualityActions, useRecordQualityAction, useDeleteQualityAction, getListQualityActionsQueryKey } from "@workspace/api-client-react";
 import type { QualityAction, QualityActionInput, Run } from "@workspace/api-client-react";
 import { Gavel, History, OctagonAlert, PackageCheck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -144,10 +144,22 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
 }
 
 function DecisionHistory({ q }: { q: { data?: QualityAction[]; isLoading: boolean; isError: boolean; refetch: () => unknown } }) {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const remove = useDeleteQualityAction();
+  const [selectedId, setSelectedId] = useState("");
+  const [deleting, setDeleting] = useState<QualityAction | null>(null);
+  const [deleteError, setDeleteError] = useState("");
   const items = useMemo(() => [...(q.data ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [q.data]);
+  const selected = items.find(a => a.requestId === selectedId);
+  const clearDeleted = (id: string) => {
+    qc.setQueryData<QualityAction[]>(getListQualityActionsQueryKey(), old => old?.filter(a => a.requestId !== id));
+    void qc.invalidateQueries({ queryKey: getListQualityActionsQueryKey() });
+    setSelectedId(""); setDeleting(null); setDeleteError("");
+  };
   return (
     <div className="p-4 md:p-5 bg-secondary/30">
-      <div className="flex items-center gap-2 mb-3"><History className="h-4 w-4 text-muted-foreground" /><h3 className="font-semibold text-sm">Decision history</h3><span className="text-[10px] font-mono text-muted-foreground ml-auto">append-only</span></div>
+      <div className="flex items-center gap-2 mb-3"><History className="h-4 w-4 text-muted-foreground" /><h3 className="font-semibold text-sm">Decision history</h3><span className="text-[10px] font-mono text-muted-foreground ml-auto">select one to delete</span></div>
       {q.isLoading ? <div className="space-y-2"><Skeleton className="h-16" /><Skeleton className="h-16" /></div>
         : q.isError ? (
           <div className="text-sm text-center py-6"><p className="text-muted-foreground">History could not be loaded.</p><Button size="sm" variant="outline" className="mt-2" data-testid="button-retry-history" onClick={() => q.refetch()}><RefreshCw className="h-3.5 w-3.5 mr-1.5" />Retry</Button></div>
@@ -160,6 +172,9 @@ function DecisionHistory({ q }: { q: { data?: QualityAction[]; isLoading: boolea
               return (
                 <li key={a.requestId} data-testid={`history-${a.requestId}`} className="rounded-lg border bg-card p-3">
                   <div className="flex flex-wrap items-center gap-2">
+                    <input type="radio" name="decision-to-delete" checked={selectedId === a.requestId} onChange={() => setSelectedId(a.requestId)} disabled={remove.isPending}
+                      aria-label={`Select ${A.verb} for ${a.batchIds.join(", ")} recorded ${new Date(a.createdAt).toLocaleString()}`}
+                      className="h-4 w-4 accent-cyan-400" />
                     <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold", A.cls)}><A.Icon className="h-3 w-3" />{A.verb}</span>
                     <span className="font-mono text-xs">{a.batchIds.join(", ")}</span>
                     <span className="font-mono text-xs text-muted-foreground">{fmt(a.quantity)} cups</span>
@@ -171,6 +186,41 @@ function DecisionHistory({ q }: { q: { data?: QualityAction[]; isLoading: boolea
             })}
           </ol>
         )}
+      <Button variant="destructive" className="mt-3" data-testid="button-delete-decision"
+        disabled={!selected || q.isLoading || q.isError || remove.isPending}
+        onClick={() => { if (selected) { setDeleteError(""); setDeleting(selected); } }}>
+        Delete selected decision
+      </Button>
+      <Dialog open={!!deleting} onOpenChange={open => { if (!open && !remove.isPending) setDeleting(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete this decision?</DialogTitle>
+            <DialogDescription>This permanently removes only the selected history record. It cannot be undone. Batch quality decisions, shipments, and quantities will not change.</DialogDescription>
+          </DialogHeader>
+          {deleting && <div className="rounded-lg border p-3 text-sm space-y-2">
+            <p className="font-semibold">{ACT[deleting.action].label} · {deleting.batchIds.join(", ")}</p>
+            <p className="text-xs text-muted-foreground">{new Date(deleting.createdAt).toLocaleString()} · {fmt(deleting.quantity)} cups</p>
+            <p className="whitespace-pre-wrap break-words">{deleting.rationale}</p>
+          </div>}
+          {deleteError && <p role="alert" className="text-sm text-destructive">{deleteError}</p>}
+          <DialogFooter>
+            <Button variant="outline" disabled={remove.isPending} onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button variant="destructive" data-testid="button-confirm-delete-decision" disabled={!deleting || remove.isPending}
+              onClick={() => {
+                if (!deleting || remove.isPending) return;
+                const id = deleting.requestId;
+                setDeleteError("");
+                remove.mutate({ requestId: id }, {
+                  onSuccess: () => { clearDeleted(id); toast({ title: "Decision deleted", description: "Only the selected history record was removed." }); },
+                  onError: error => {
+                    if (errStatus(error) === 404) { clearDeleted(id); toast({ title: "Decision already removed" }); }
+                    else setDeleteError(errMessage(error));
+                  },
+                });
+              }}>{remove.isPending ? "Deleting…" : "Permanently delete"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

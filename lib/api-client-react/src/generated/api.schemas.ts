@@ -39,6 +39,54 @@ export interface PackagingAllocation {
   unit: PackagingAllocationUnit;
 }
 
+export interface AuthUser {
+  id: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  lastName: string | null;
+  /** @nullable */
+  profileImageUrl: string | null;
+}
+
+export interface AuthUserEnvelope {
+  user: AuthUser | null;
+}
+
+export interface MobileTokenExchangeRequest {
+  /** @minLength 1 */
+  code: string;
+  /** @minLength 1 */
+  code_verifier: string;
+  /** @minLength 1 */
+  redirect_uri: string;
+  /** @minLength 1 */
+  state: string;
+  /** @minLength 1 */
+  nonce?: string;
+}
+
+export type PackagingDocumentKind = typeof PackagingDocumentKind[keyof typeof PackagingDocumentKind];
+
+
+export const PackagingDocumentKind = {
+  supplier_declaration: 'supplier_declaration',
+  migration_report: 'migration_report',
+  inspection_report: 'inspection_report',
+} as const;
+
+export interface PackagingDocument {
+  id: string;
+  batchId: string;
+  kind: PackagingDocumentKind;
+  name: string;
+  contentType: string;
+  size: number;
+  createdAt: string;
+}
+
 export type PackagingBatchInputCategory = typeof PackagingBatchInputCategory[keyof typeof PackagingBatchInputCategory];
 
 
@@ -342,6 +390,18 @@ export interface RunUpdate {
 export interface HealthStatus {
   status: string;
 }
+
+export type BeginBrowserLoginParams = {
+returnTo?: string;
+};
+
+export type ExchangeMobileAuthorizationCode200 = {
+  token: string;
+};
+
+export type LogoutMobileSession200 = {
+  success: boolean;
+};
 
 export type GetTraceParams = {
 search?: string;

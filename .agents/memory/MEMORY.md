@@ -1,2 +1,3 @@
 - [MVP scope](mvp-scope.md) — Ghazi Plast tracks supplier-alert impact; unspecified lot and quality values must remain explicitly demo or pending.
 - [Packaging Center scope](packaging-center.md) — Separate interface; preserve the original dashboard and distinguish recorded documentation from verified compliance.
+- [Packaging evidence](packaging-evidence.md) — Private uploader access until staff sharing exists; validate bytes before storage without implying certification.

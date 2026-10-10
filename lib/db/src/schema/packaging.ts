@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
 
 export const packagingBatches = pgTable("packaging_batches", {
   id: text("id").primaryKey(),
@@ -26,4 +26,16 @@ export const packagingBatches = pgTable("packaging_batches", {
   }>().notNull(),
   demo: boolean("demo").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const packagingDocuments = pgTable("packaging_documents", {
+  id: text("id").primaryKey(),
+  batchId: text("batch_id").notNull().references(() => packagingBatches.id),
+  ownerId: text("owner_id").notNull(),
+  kind: text("kind").notNull(),
+  name: text("name").notNull(),
+  contentType: text("content_type").notNull(),
+  size: integer("size").notNull(),
+  objectPath: text("object_path").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

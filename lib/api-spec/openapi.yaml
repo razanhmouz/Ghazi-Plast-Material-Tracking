@@ -11,6 +11,109 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /auth/user:
+    get:
+      operationId: getCurrentAuthUser
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthUserEnvelope" }
+  /login:
+    get:
+      operationId: beginBrowserLogin
+      parameters:
+        - { name: returnTo, in: query, schema: { type: string } }
+      responses:
+        "302": { description: OIDC redirect }
+  /callback:
+    get:
+      operationId: handleBrowserLoginCallback
+      responses:
+        "302": { description: Return to app }
+  /logout:
+    get:
+      operationId: logoutBrowserSession
+      responses:
+        "302": { description: Logout redirect }
+  /mobile-auth/token-exchange:
+    post:
+      operationId: exchangeMobileAuthorizationCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MobileTokenExchangeRequest" }
+      responses:
+        "200":
+          description: Session
+          content:
+            application/json:
+              schema: { type: object, required: [token], properties: { token: { type: string } } }
+  /mobile-auth/logout:
+    post:
+      operationId: logoutMobileSession
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema: { type: object, required: [success], properties: { success: { type: boolean } } }
+  /packaging/batches/{batchId}/documents:
+    parameters:
+      - { name: batchId, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+    get:
+      operationId: listPackagingDocuments
+      summary: List the signed-in uploader's evidence for this batch
+      responses:
+        "200":
+          description: Uploaded evidence, not verified certification
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/PackagingDocument" } }
+        "401": { description: Login required }
+        "404": { description: Batch not found }
+        "503": { description: Documents unavailable }
+    post:
+      operationId: uploadPackagingDocument
+      summary: Upload PDF, PNG or JPEG evidence, up to 10 MiB, without changing compliance status
+      parameters:
+        - { name: x-document-name, in: header, required: true, description: URI-encoded original filename, schema: { type: string, minLength: 1, maxLength: 1620 } }
+        - { name: x-document-kind, in: header, required: true, schema: { type: string, enum: [supplier_declaration, migration_report, inspection_report] } }
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { type: string, format: binary }
+      responses:
+        "201":
+          description: Stored document
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PackagingDocument" }
+        "400": { description: Invalid file or metadata }
+        "401": { description: Login required }
+        "403": { description: Cross-origin write rejected }
+        "404": { description: Batch not found }
+        "413": { description: File exceeds 10 MiB }
+        "429": { description: "Upload capacity reached, retry later" }
+        "503": { description: "Upload failed, retry" }
+  /packaging/batches/{batchId}/documents/{documentId}/download:
+    get:
+      operationId: downloadPackagingDocument
+      parameters:
+        - { name: batchId, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+        - { name: documentId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Original file as an attachment, uploader access only
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "401": { description: Login required }
+        "404": { description: Document not found or not owned by this user }
+        "503": { description: Download unavailable }
   /packaging/batches:
     get:
       operationId: listPackagingBatches
@@ -183,6 +286,43 @@ components:
         customer: { type: string, minLength: 1, maxLength: 200 }
         quantity: { type: number, exclusiveMinimum: 0, maximum: 1000000000 }
         unit: { type: string, enum: [pieces, kg, liters, rolls, sheets, cartons] }
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl]
+      properties:
+        id: { type: string }
+        email: { type: [string, "null"] }
+        firstName: { type: [string, "null"] }
+        lastName: { type: [string, "null"] }
+        profileImageUrl: { type: [string, "null"] }
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - { $ref: "#/components/schemas/AuthUser" }
+            - { type: "null" }
+    MobileTokenExchangeRequest:
+      type: object
+      required: [code, code_verifier, redirect_uri, state]
+      properties:
+        code: { type: string, minLength: 1 }
+        code_verifier: { type: string, minLength: 1 }
+        redirect_uri: { type: string, minLength: 1, format: uri }
+        state: { type: string, minLength: 1 }
+        nonce: { type: string, minLength: 1 }
+    PackagingDocument:
+      type: object
+      required: [id, batchId, kind, name, contentType, size, createdAt]
+      properties:
+        id: { type: string }
+        batchId: { type: string }
+        kind: { type: string, enum: [supplier_declaration, migration_report, inspection_report] }
+        name: { type: string }
+        contentType: { type: string }
+        size: { type: integer }
+        createdAt: { type: string, format: date-time }
     PackagingBatchInput:
       type: object
       required: [lotId, category, materialName, supplierName, supplierCountry, supplierContact, quantity, unit, status, complianceStatus, documentRef, complianceNotes, finishedBatches, destinations]

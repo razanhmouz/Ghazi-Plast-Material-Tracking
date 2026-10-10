@@ -4,6 +4,7 @@ import { useCreatePackagingBatch, useUpdatePackagingBatch, getListPackagingBatch
 import { Factory, Layers, Package, Truck, ShieldAlert, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AllocationFields, AllocationTrace } from "./packaging-allocations";
+import { PackagingDocuments } from "./packaging-documents";
 
 export const packagingLabels: Record<string, string> = { ink: "Ink", adhesive: "Adhesive", coating: "Coating", raw_material: "Raw material", pending: "Pending", released: "Released", hold: "On hold", documented: "Documented", review_required: "Review required" };
 export function PackagingBadge({ value }: { value: string }) { return <span className={`ptc-badge ${value}`}>{packagingLabels[value] || value}</span>; }
@@ -24,6 +25,7 @@ export function PackagingDetail({ batch, close, edit }: { batch: PackagingBatch 
     <AllocationTrace allocations={batch.allocations ?? []}/>
     <div className="ptc-detail-grid"><div><h3>Supplier information</h3><p>{batch.supplierContact || "Contact not recorded"}</p><small>Last updated {new Date(batch.updatedAt).toLocaleString()}</small></div><div><h3>Quality documentation</h3><p>Reference: {batch.documentRef || "Not recorded"}</p><p>{batch.complianceNotes || "No compliance notes recorded."}</p></div></div>
     <div className="ptc-note"><ShieldAlert/>Human-entered declarations, not independently verified legal compliance or certification. Release status is a recorded decision, not an automated approval.</div>
+    <PackagingDocuments key={batch.id} batchId={batch.id}/>
     <div className="ptc-form-actions"><button className="ptc-btn" onClick={close}>Close</button><button className="ptc-btn ptc-btn-primary" onClick={() => edit(batch)}><Pencil/>Edit complete record</button></div>
   </>}</DialogContent></Dialog>;
 }
@@ -68,6 +70,7 @@ export function PackagingEditor({ batch, close, saved }: { batch: PackagingBatch
       <label className="ptc-field">Quantity *<input data-testid="input-packaging-quantity" type="number" min="0" max="1000000000" step="any" required value={quantity} onChange={e=>setQuantity(e.target.value)}/></label>{select("unit","Unit",["kg","liters","rolls","sheets"])}{select("status","Recorded batch status",["pending","hold","released"])}
       <div className="ptc-form-section">02 / Supplier record</div>{text("supplierName","Supplier name *",200,true)}{text("supplierCountry","Country",100)}{text("supplierContact","Contact / email / phone",200)}
       <div className="ptc-form-section">03 / Human-entered quality declaration</div>{select("complianceStatus","Documentation status",["pending","review_required","documented"])}{text("documentRef","Document reference (required if documented)",300)}
+      <p className="ptc-field-wide">To attach evidence files, save this record, then open its details and use “Evidence files”. Uploads do not verify certification or change the recorded status.</p>
       <label className="ptc-field ptc-field-wide">Compliance notes<textarea data-testid="input-packaging-complianceNotes" rows={3} maxLength={3000} value={form.complianceNotes} onChange={e=>field("complianceNotes",e.target.value)}/></label>
       <div className="ptc-form-section">04 / Aggregate downstream links · unallocated</div>
       <label className="ptc-field">Finished batch IDs · one per line<textarea data-testid="input-packaging-finishedBatches" rows={3} value={finished} onChange={e=>setFinished(e.target.value)}/></label><label className="ptc-field">Customers / destinations · one per line<textarea data-testid="input-packaging-destinations" rows={3} value={destinations} onChange={e=>setDestinations(e.target.value)}/></label>

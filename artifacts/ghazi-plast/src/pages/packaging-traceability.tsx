@@ -10,7 +10,7 @@ export default function PackagingTraceabilityPage() {
   const ai = useSearchPackagingTrace();
   const [tab,setTab] = useState("batches");
   const [text,setText] = useState("");const [category,setCategory] = useState("all");const [status,setStatus] = useState("all");
-  const [selected,setSelected] = useState<string|null>(null);
+  const [selected,setSelected] = useState<string|null>(() => new URLSearchParams(window.location.search).get("documentBatch"));
   const [editor,setEditor] = useState<PackagingBatch|null|undefined>(undefined);
   const [question,setQuestion] = useState("");const [lastQuestion,setLastQuestion] = useState("");const [notice,setNotice] = useState("");
   useEffect(()=>{const previous=document.title;document.title="Packaging Traceability Center | Ghazi Plast";return()=>{document.title=previous;};},[]);

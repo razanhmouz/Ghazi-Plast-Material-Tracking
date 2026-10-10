@@ -8,6 +8,121 @@
 import * as zod from 'zod';
 
 
+export const GetCurrentAuthUserResponse = zod.object({
+  "user": zod.union([zod.object({
+  "id": zod.string(),
+  "email": zod.string().nullable(),
+  "firstName": zod.string().nullable(),
+  "lastName": zod.string().nullable(),
+  "profileImageUrl": zod.string().nullable()
+}),zod.null()])
+})
+
+
+export const BeginBrowserLoginQueryParams = zod.object({
+  "returnTo": zod.coerce.string().optional()
+})
+
+export const BeginBrowserLoginResponse = zod.void()
+
+
+export const HandleBrowserLoginCallbackResponse = zod.void()
+
+
+export const LogoutBrowserSessionResponse = zod.void()
+
+
+
+
+
+
+
+
+
+export const ExchangeMobileAuthorizationCodeBody = zod.object({
+  "code": zod.string().min(1),
+  "code_verifier": zod.string().min(1),
+  "redirect_uri": zod.string().url().min(1),
+  "state": zod.string().min(1),
+  "nonce": zod.string().min(1).optional()
+})
+
+export const ExchangeMobileAuthorizationCodeResponse = zod.object({
+  "token": zod.string()
+})
+
+
+export const LogoutMobileSessionResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary List the signed-in uploader's evidence for this batch
+ */
+export const listPackagingDocumentsPathBatchIdMax = 100;
+
+
+
+export const ListPackagingDocumentsParams = zod.object({
+  "batchId": zod.coerce.string().min(1).max(listPackagingDocumentsPathBatchIdMax)
+})
+
+export const ListPackagingDocumentsResponseItem = zod.object({
+  "id": zod.string(),
+  "batchId": zod.string(),
+  "kind": zod.enum(['supplier_declaration', 'migration_report', 'inspection_report']),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "createdAt": zod.coerce.date()
+})
+export const ListPackagingDocumentsResponse = zod.array(ListPackagingDocumentsResponseItem)
+
+
+/**
+ * @summary Upload PDF, PNG or JPEG evidence, up to 10 MiB, without changing compliance status
+ */
+export const uploadPackagingDocumentPathBatchIdMax = 100;
+
+
+
+export const UploadPackagingDocumentParams = zod.object({
+  "batchId": zod.coerce.string().min(1).max(uploadPackagingDocumentPathBatchIdMax)
+})
+
+export const uploadPackagingDocumentHeaderXDocumentNameMax = 1620;
+
+
+
+export const UploadPackagingDocumentHeader = zod.object({
+  "x-document-name": zod.string().min(1).max(uploadPackagingDocumentHeaderXDocumentNameMax).describe('URI-encoded original filename'),
+  "x-document-kind": zod.enum(['supplier_declaration', 'migration_report', 'inspection_report'])
+})
+
+export const UploadPackagingDocumentResponse = zod.object({
+  "id": zod.string(),
+  "batchId": zod.string(),
+  "kind": zod.enum(['supplier_declaration', 'migration_report', 'inspection_report']),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const downloadPackagingDocumentPathBatchIdMax = 100;
+
+
+
+export const DownloadPackagingDocumentParams = zod.object({
+  "batchId": zod.coerce.string().min(1).max(downloadPackagingDocumentPathBatchIdMax),
+  "documentId": zod.coerce.string().uuid()
+})
+
+export const DownloadPackagingDocumentResponse = zod.unknown()
+
+
 export const listPackagingBatchesResponseOneLotIdMax = 100;
 
 export const listPackagingBatchesResponseOneMaterialNameMax = 200;

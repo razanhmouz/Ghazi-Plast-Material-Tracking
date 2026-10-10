@@ -1,0 +1,85 @@
+import { useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@workspace/replit-auth-web";
+import type { PackagingDocument } from "@workspace/api-client-react";
+
+const labels = { supplier_declaration: "Supplier declaration / certificate", migration_report: "Migration test report", inspection_report: "Inspection report" };
+type Kind = keyof typeof labels;
+const api = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api`;
+async function checked(response: Response) {
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.error || `Request failed (${response.status}). Please retry.`);
+  }
+  return response;
+}
+
+export function PackagingDocuments({ batchId }: { batchId: string }) {
+  const { user, isLoading, isAuthenticated } = useAuth();
+  const qc = useQueryClient();
+  const [kind, setKind] = useState<Kind>("supplier_declaration");
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  const endpoint = `${api}/packaging/batches/${encodeURIComponent(batchId)}/documents`;
+  const key = ["packaging-documents", batchId, user?.id];
+  const documents = useQuery<PackagingDocument[]>({
+    queryKey: key, enabled: isAuthenticated, staleTime: 0, refetchInterval: 30000,
+    queryFn: async () => (await checked(await fetch(endpoint, { credentials: "include" }))).json(),
+  });
+  const upload = async () => {
+    setError(""); setMessage("");
+    if (!file || !file.size || file.size > 10 * 1024 * 1024 || !/\.(pdf|png|jpe?g)$/i.test(file.name) || file.name.length > 180) {
+      setError("Choose a non-empty PDF, PNG or JPEG up to 10 MiB, with a filename no longer than 180 characters."); return;
+    }
+    setBusy(true);
+    try {
+      await checked(await fetch(endpoint, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/octet-stream", "x-document-name": encodeURIComponent(file.name), "x-document-kind": kind },
+        body: file,
+      }));
+      setFile(null); if (input.current) input.current.value = "";
+      await qc.invalidateQueries({ queryKey: key });
+      setMessage("Evidence uploaded. Certification and batch status have not changed.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Upload failed. Please retry."); }
+    finally { setBusy(false); }
+  };
+  const download = async (doc: PackagingDocument) => {
+    setError(""); setBusy(true);
+    try {
+      const response = await checked(await fetch(`${endpoint}/${doc.id}/download`, { credentials: "include" }));
+      const url = URL.createObjectURL(await response.blob());
+      const anchor = document.createElement("a"); anchor.href = url; anchor.download = doc.name;
+      document.body.appendChild(anchor); anchor.click(); anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) { setError(e instanceof Error ? e.message : "Download failed. Please retry."); }
+    finally { setBusy(false); }
+  };
+  const returnTo = `${window.location.pathname}?documentBatch=${encodeURIComponent(batchId)}`;
+  return <section aria-label="Batch evidence documents">
+    <h3>Evidence files</h3>
+    <p>Uploaded evidence is not verified certification or confirmation of food-contact suitability. Files are not malware-scanned.</p>
+    {isLoading ? <p>Checking document access…</p> : !isAuthenticated ?
+      <a className="ptc-btn" href={`${api}/login?returnTo=${encodeURIComponent(returnTo)}`}>Log in to upload or download your evidence</a> :
+      <>
+        <p><small>Private to your account. Other registry users cannot see your files. <a href={`${api}/logout?returnTo=${encodeURIComponent(returnTo)}`}>Log out</a></small></p>
+        {documents.isLoading ? <p>Loading documents…</p> : documents.isError ?
+          <p role="alert" className="ptc-error">Documents could not be loaded. <button className="ptc-btn" onClick={() => void documents.refetch()}>Retry</button></p> :
+          documents.data?.length ? <ul style={{ paddingLeft: 20 }}>{documents.data.map(doc => <li key={doc.id} style={{ marginBottom: 12, overflowWrap: "anywhere" }}>
+            <strong>{doc.name}</strong> — {labels[doc.kind]}<br/>
+            <small>{(doc.size / 1024).toFixed(1)} KiB · {new Date(doc.createdAt).toLocaleString()} · Uploaded, unverified</small>{" "}
+            <button className="ptc-btn" disabled={busy} onClick={() => void download(doc)}>Download</button>
+          </li>)}</ul> : <p>No files uploaded by your account for this batch.</p>}
+        <fieldset disabled={busy}>
+          <label className="ptc-field">Document category<select value={kind} onChange={e => setKind(e.target.value as Kind)}>{Object.entries(labels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
+          <label className="ptc-field">Evidence file · PDF, PNG or JPEG · max 10 MiB<input ref={input} type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={e => { setFile(e.target.files?.[0] ?? null); setError(""); setMessage(""); }}/></label>
+          <button type="button" className="ptc-btn ptc-btn-primary" disabled={!file || busy} onClick={() => void upload()}>{busy ? "Transferring file…" : "Upload evidence"}</button>
+        </fieldset>
+      </>}
+    {error && <p className="ptc-error" role="alert">{error}</p>}
+    {message && <p role="status">{message}</p>}
+  </section>;
+}

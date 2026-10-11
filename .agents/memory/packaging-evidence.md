@@ -37,3 +37,9 @@ Document-derived failure streaks are private activity too, even without filename
 **Why:** An unrelated signed-in account could infer another account's failed scans and recovery by polling shared status.
 
 **How to apply:** Derive shared availability exclusively from fixed content-free probes; apply document access controls to every document-derived count and incident indicator.
+
+Worker lifecycle tests must isolate the entire claimable queue, not merely give fixtures unique owner IDs.
+
+**Why:** The live development scanner claims due evidence without owner filtering; owner-specific fixtures alone let the app and test workers interfere with each other.
+
+**How to apply:** Exercise durable leases against a separate database schema with independent worker processes, never against the shared development evidence queue.

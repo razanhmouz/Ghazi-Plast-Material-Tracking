@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { ReplitConnectors } from "@replit/connectors-sdk";
 
-export function notificationRecipient(): string | null {
-  const value = process.env.QUALITY_NOTIFICATION_RECIPIENT?.trim() ?? "";
-  return /^[^\s@,<>]+@[^\s@,<>]+\.[^\s@,<>]+$/.test(value) ? value : null;
+export function notificationRecipients(emails: (string | null)[]): string[] {
+  return [...new Set(emails.map(email => email?.trim().toLowerCase() ?? "")
+    .filter(email => /^[^\s@,<>;]+@[^\s@,<>;]+\.[^\s@,<>;]+$/.test(email)))].sort();
 }
 
 export function decisionEmail(decision: {
@@ -43,7 +43,8 @@ export async function deliverDecisionEmail(notification: Notification, send: Sen
 ): Promise<DeliveryResult> {
   const messageId = `${createHash("sha256").update(notification.requestId).digest("hex")}@notifications.ghazi-plast.invalid`;
   const raw = Buffer.from([
-    `To: ${notification.recipient}`,
+    "To: undisclosed-recipients:;",
+    `Bcc: ${notification.recipient.split(",").join(",\r\n ")}`,
     `Subject: =?UTF-8?B?${Buffer.from(notification.subject).toString("base64")}?=`,
     `Message-ID: <${messageId}>`,
     "MIME-Version: 1.0",

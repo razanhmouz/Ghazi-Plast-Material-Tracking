@@ -22,9 +22,9 @@ Staff workflow: Production receives P-77 records and supplier documentation and 
 
 Quality Manager final actions are recorded instructions, not physical recall execution or shipment releases. The user subsequently authorized Gmail notifications containing Decision history details for new recall and release decisions.
 
-**Why:** The user explicitly requested email on new decisions and chose a fixed recipient, superseding the original no-notification scope without authorizing physical shipment changes.
+**Why:** The user explicitly requested email on new decisions, then expanded the audience to everyone who has signed in, superseding the original no-notification scope without authorizing physical shipment changes.
 
-**How to apply:** Send only for new confirmed decisions, not historical records. Keep shipment status and quantities unchanged. Sign-in is required to trigger email; manager labeling alone is not a verified role. Do not store recipient addresses in agent memory.
+**How to apply:** Send only for new confirmed decisions to all registered users with valid email addresses, including currently logged-out users. Snapshot the audience when recording and hide recipient addresses from one another. Keep shipment status and quantities unchanged. Sign-in is required to trigger email; manager labeling alone is not a verified role. Do not store recipient addresses in agent memory.
 
 The user permits deletion of one selected decision-history record, with confirmation, rather than clearing all history.
 

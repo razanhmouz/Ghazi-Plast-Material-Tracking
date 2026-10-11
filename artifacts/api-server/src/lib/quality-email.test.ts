@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decisionEmail, deliverDecisionEmail } from "./quality-email";
+import { decisionEmail, deliverDecisionEmail, notificationRecipients } from "./quality-email";
 
 const decision = { requestId: "test-decision", action: "recall", batchIds: ["TEST-CUP"], rationale: "Review migration report\nHold pending review", quantity: 30, createdAt: new Date("2026-10-11T12:00:00Z") };
 const runs = [{ id: "TEST-CUP", quantity: 30, materialId: "TEST-MAT", inkLot: "TEST-INK", inspectionResult: "passed", destinations: [{ name: "Test customer", quantity: 30, type: "shipped" }] }];
@@ -16,7 +16,8 @@ test("Gmail acceptance returns sent and RFC message is correctly encoded", async
   const result = await deliverDecisionEmail(notification, async raw => {
     calls++;
     const mime = Buffer.from(raw, "base64url").toString();
-    assert.ok(mime.includes("To: test@example.invalid"));
+    assert.ok(mime.includes("To: undisclosed-recipients:;"));
+    assert.ok(mime.includes("Bcc: test@example.invalid"));
     assert.ok(mime.includes("Message-ID: <"));
     assert.equal(Buffer.from(mime.split("\r\n\r\n")[1].replace(/\r\n/g, ""), "base64").toString(), notification.body);
     return Response.json({ id: "gmail-test-id" });
@@ -41,4 +42,21 @@ test("stalled sends become uncertain rather than triggering duplicate emails", a
   const result = await deliverDecisionEmail(notification, () => { calls++; return new Promise(() => {}); }, 5);
   assert.equal(result.status, "unknown");
   assert.equal(calls, 1);
+});
+
+test("all registered emails are normalized, deduplicated and validated", () => {
+  assert.deepEqual(notificationRecipients([" ONE@example.invalid ", "one@example.invalid", null, "", "bad", "x@example.invalid\r\nBcc: other@example.invalid", "two@example.invalid"]),
+    ["one@example.invalid", "two@example.invalid"]);
+  assert.deepEqual(notificationRecipients([]), []);
+});
+
+test("multiple recipients are BCC only, not disclosed in To or body", async () => {
+  const result = await deliverDecisionEmail({ ...notification, recipient: "one@example.invalid,two@example.invalid" }, async raw => {
+    const mime = Buffer.from(raw, "base64url").toString();
+    assert.ok(mime.includes("Bcc: one@example.invalid,\r\n two@example.invalid"));
+    assert.ok(mime.startsWith("To: undisclosed-recipients:;\r\n"));
+    assert.ok(!notification.body.includes("one@example.invalid"));
+    return Response.json({ id: "test-bulk-id" });
+  });
+  assert.equal(result.status, "sent");
 });

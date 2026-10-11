@@ -1,20 +1,25 @@
 import { Router, type IRouter } from "express";
-import { db, productionRuns, qualityActions, qualityNotifications } from "@workspace/db";
+import { db, productionRuns, qualityActions, qualityNotifications, usersTable } from "@workspace/db";
 import { desc, eq, inArray } from "drizzle-orm";
 import { ListQualityActionsResponse, RecordQualityActionBody, RecordQualityActionResponse, DeleteQualityActionParams } from "@workspace/api-zod";
-import { decisionEmail, notificationRecipient } from "../lib/quality-email";
+import { decisionEmail, notificationRecipients } from "../lib/quality-email";
 
 const router: IRouter = Router();
+async function signedInRecipients() {
+  const users = await db.select({ email: usersTable.email }).from(usersTable);
+  return notificationRecipients(users.map(user => user.email));
+}
+const audienceLabel = (count: number) => `${count} registered user${count === 1 ? "" : "s"} with email`;
 const serialize = (r: typeof qualityActions.$inferSelect, email?: typeof qualityNotifications.$inferSelect) => ({
   ...r, createdAt: r.createdAt.toISOString(),
-  emailStatus: email?.status ?? "not_requested", emailRecipient: email?.recipient,
+  emailStatus: email?.status ?? "not_requested", emailRecipient: email ? `${email.recipient.split(",").length} email recipient(s)` : undefined,
   emailError: email?.error ?? undefined, emailSentAt: email?.sentAt?.toISOString(),
 });
 
-router.get("/quality-email-settings", (req, res): void => {
+router.get("/quality-email-settings", async (req, res): Promise<void> => {
   if (!req.isAuthenticated()) { res.status(401).json({ error: "Log in to record and email decisions." }); return; }
-  const recipient = notificationRecipient();
-  res.json({ recipient: recipient ?? "", enabled: !!recipient });
+  const recipients = await signedInRecipients();
+  res.json({ recipient: audienceLabel(recipients.length), enabled: recipients.length > 0 });
 });
 
 router.get("/quality-actions", async (_req, res): Promise<void> => {
@@ -26,8 +31,8 @@ router.get("/quality-actions", async (_req, res): Promise<void> => {
 
 router.post("/quality-actions", async (req, res): Promise<void> => {
   if (!req.isAuthenticated()) { res.status(401).json({ error: "Log in before recording and emailing a decision." }); return; }
-  const recipient = notificationRecipient();
-  if (!recipient) { res.status(503).json({ error: "A notification recipient must be configured before recording a new decision." }); return; }
+  const recipient = (await signedInRecipients()).join(",");
+  if (!recipient) { res.status(503).json({ error: "No registered users have a valid email address for decision notifications." }); return; }
   const parsed = RecordQualityActionBody.safeParse(req.body);
   if (!parsed.success || !parsed.data.rationale.trim()) {
     res.status(400).json({error: "Select batches, an action, and a non-empty rationale."}); return;

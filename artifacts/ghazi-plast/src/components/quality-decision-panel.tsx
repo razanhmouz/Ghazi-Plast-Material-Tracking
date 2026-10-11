@@ -122,7 +122,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
             {!auth.isAuthenticated ? <><p>Log in to record a decision and send its Gmail notification.</p><Button size="sm" variant="outline" disabled={auth.isLoading} onClick={auth.login}>Log in</Button></>
               : emailSettings.isError ? <><p role="alert">Notification settings could not be loaded.</p><Button size="sm" variant="outline" onClick={() => void emailSettings.refetch()}>Retry settings</Button></>
               : emailSettings.isLoading ? <p>Loading notification settings…</p>
-              : emailSettings.data?.enabled ? <p>Each confirmed decision emails its details to <strong className="break-all">{emailSettings.data.recipient}</strong>. Sending status appears in Decision history.</p>
+              : emailSettings.data?.enabled ? <p>Each confirmed decision emails everyone who has signed in with a valid email address (currently <strong>{emailSettings.data.recipient}</strong>). Recipients are determined when the decision is recorded and their addresses are hidden from one another. Sending status appears in Decision history.</p>
               : <p role="alert">Email notifications are not configured. New decisions cannot be recorded yet.</p>}
           </div>
         </div>
@@ -132,7 +132,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{action && ACT[action].label}?</DialogTitle>
-            <DialogDescription>This records the instruction and emails its details to {emailSettings.data?.recipient}. It does not execute a physical recall, dispatch goods, change shipment quantities or statuses, or notify other recipients.</DialogDescription>
+            <DialogDescription>This records the instruction and emails its details to all users who have signed in and have a valid email address, including users who are currently logged out. It does not execute a physical recall, dispatch goods, or change shipment quantities or statuses.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <div className="rounded-lg border divide-y">

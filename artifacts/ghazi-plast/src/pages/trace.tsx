@@ -190,9 +190,6 @@ export default function TracePage() {
                     <TabsTrigger value="dist" data-testid="tab-distribution" className="text-xs">Distribution</TabsTrigger>
                   </TabsList>
                   <div className="ml-auto flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" data-testid="button-refresh" onClick={() => refetch()} disabled={isFetching}>
-                      <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isFetching && "animate-spin")} />Refresh
-                    </Button>
                     <Button size="sm" data-testid="button-export" disabled={runs.length === 0} onClick={() => exportCsv(runs, materials)}>
                       <Download className="h-3.5 w-3.5 mr-1.5" />Export CSV
                     </Button>

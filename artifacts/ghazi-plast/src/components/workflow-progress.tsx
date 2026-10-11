@@ -66,7 +66,7 @@ export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
                 </span>}
                 <h3 className="font-semibold text-sm leading-tight">{step.title}</h3>
               </div>
-              <p className="micro !text-primary/90 mb-1">{step.owner}</p>
+              <p className="micro !text-primary/90 mb-1 text-center">{step.owner}</p>
             </li>
           );
         })}

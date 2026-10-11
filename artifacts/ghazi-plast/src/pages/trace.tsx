@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetTrace, useUpdateRun, getGetTraceQueryKey } from "@workspace/api-client-react";
 import { OperationsTable } from "@/components/operations-table";
+import { filterOperations } from "@/lib/operations-filter";
 import { ChecklistDialog } from "@/components/checklist-dialog";
 import { QualityDecisionPanel } from "@/components/quality-decision-panel";
 import { OwnerVerification } from "@/components/owner-verification";
@@ -42,13 +43,12 @@ function exportCsv(runs: Run[], materials: Material[]) {
 
 export default function TracePage() {
   const [input, setInput] = useState("");
-  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("ops");
   const [editing, setEditing] = useState<Run | null>(null);
   const [focusRun, setFocusRun] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const params = search ? { search } : undefined;
   const [checklistRun, setChecklistRun] = useState<Run | null>(null);
-  const { data, isLoading, isError, refetch, isFetching } = useGetTrace(params, { query: { queryKey: getGetTraceQueryKey(params), refetchInterval: 30000, refetchOnWindowFocus: true } });
+  const { data, isLoading, isError, refetch, isFetching } = useGetTrace(undefined, { query: { queryKey: getGetTraceQueryKey(), refetchInterval: 30000, refetchOnWindowFocus: true } });
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -63,6 +63,9 @@ export default function TracePage() {
 
   const materials = useMemo(() => data?.materials ?? [], [data]);
   const runs = useMemo(() => data?.runs ?? [], [data]);
+  const operationGroups = useMemo(() => filterOperations(runs, materials, input), [runs, materials, input]);
+  const visibleRows = operationGroups.reduce((count, group) => count + group.rows.length, 0);
+  const totalRows = runs.reduce((count, run) => count + Math.max(1, run.destinations.length), 0);
   const totals = useMemo(() => {
     const cups = runs.reduce((s, r) => s + r.quantity, 0);
     let shipped = 0, inventory = 0;
@@ -78,7 +81,7 @@ export default function TracePage() {
     return { cups, shipped, inventory, byRel, customers: customers.size, open };
   }, [runs]);
 
-  const submit = (v: string) => { setSearch(v.trim()); setFocusRun(null); };
+  const submit = (v: string) => { setInput(v); setFocusRun(null); setActiveTab("ops"); };
 
   return (
     <div className="min-h-[100dvh] grid-paper">
@@ -99,18 +102,18 @@ export default function TracePage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 md:px-6 py-5 space-y-4">
-        <WorkflowProgress resultsReady={Boolean(search && !isFetching && !isError && materials.length > 0)} />
+        <WorkflowProgress resultsReady={Boolean(input.trim() && !isFetching && !isError && visibleRows > 0)} />
 
         <section className="grid gap-3 lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] rise">
           <form onSubmit={(e) => { e.preventDefault(); submit(input); }} className="panel p-3">
             <Label htmlFor="trace-search" className="micro flex items-center gap-1.5 mb-2">
-              <ScanBarcode className="h-3.5 w-3.5 text-primary" /> Type or scan barcode · Enter to trace
+              <ScanBarcode className="h-3.5 w-3.5 text-primary" /> Global table filter · All columns
             </Label>
             <div className="flex gap-2">
               <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="trace-search" ref={inputRef} data-testid="input-search" value={input} onChange={(e) => setInput(e.target.value)}
-                  placeholder="MAT-P77-001 or P-77" className="pl-9 pr-10 h-10 font-mono bg-background" autoComplete="off" />
+                <Input id="trace-search" ref={inputRef} data-testid="input-search" value={input} onChange={(e) => submit(e.target.value)}
+                  placeholder="Batch, customer, material, ink, QC…" className="pl-9 pr-10 h-10 font-mono bg-background" autoComplete="off" aria-controls="operations-results" />
                 {input ? (
                   <button type="button" data-testid="button-clear-search" onClick={() => { setInput(""); submit(""); inputRef.current?.focus(); }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted text-muted-foreground" aria-label="Clear search"><X className="h-4 w-4" /></button>
@@ -118,7 +121,7 @@ export default function TracePage() {
                   <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-[10px] border rounded px-1.5 py-0.5 text-muted-foreground bg-muted">/</kbd>
                 )}
               </div>
-              <Button type="submit" data-testid="button-search" className="h-10">Trace</Button>
+              <Button type="submit" data-testid="button-search" className="h-10">Filter</Button>
             </div>
             <div className="flex flex-wrap gap-1.5 mt-2 text-[11px] items-center">
               <span className="micro !text-[10px]">Quick</span>
@@ -154,8 +157,8 @@ export default function TracePage() {
         ) : materials.length === 0 && runs.length === 0 ? (
           <div className="panel border-dashed p-12 text-center rise">
             <Package className="h-8 w-8 mx-auto text-muted-foreground" />
-            <h2 className="mt-3 font-semibold">No material matches “{search}”</h2>
-            <p className="text-sm text-muted-foreground mt-1">Check the label. Material IDs look like <span className="font-mono">MAT-P77-001</span>; supplier codes like <span className="font-mono">P-77</span>.</p>
+            <h2 className="mt-3 font-semibold">No trace records available</h2>
+            <p className="text-sm text-muted-foreground mt-1">No materials or production batches have been recorded.</p>
             <Button variant="outline" className="mt-4" data-testid="button-reset-search" onClick={() => { setInput(""); submit(""); }}>Show all materials</Button>
           </div>
         ) : (
@@ -181,7 +184,7 @@ export default function TracePage() {
             ))}
 
             <div className="grid gap-4 lg:grid-cols-3 items-start">
-              <Tabs defaultValue="ops" className="rise lg:col-span-2 min-w-0">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="rise lg:col-span-2 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 justify-between">
                   <TabsList className="bg-secondary border grid grid-cols-2 h-auto w-full sm:flex sm:w-auto">
                     <TabsTrigger value="ops" data-testid="tab-operations" className="text-xs">Operations table</TabsTrigger>
@@ -190,14 +193,19 @@ export default function TracePage() {
                     <TabsTrigger value="dist" data-testid="tab-distribution" className="text-xs">Distribution</TabsTrigger>
                   </TabsList>
                   <div className="ml-auto flex flex-wrap gap-2">
-                    <Button size="sm" data-testid="button-export" disabled={runs.length === 0} onClick={() => exportCsv(runs, materials)}>
+                    <Button size="sm" data-testid="button-export" title="Export all operations, including rows hidden by the filter" disabled={runs.length === 0} onClick={() => exportCsv(runs, materials)}>
                       <Download className="h-3.5 w-3.5 mr-1.5" />Export CSV
                     </Button>
                     <AddDestination runs={runs} />
                   </div>
                 </div>
                 <TabsContent value="ops" className="mt-3">
-                  <OperationsTable runs={runs} onChecklist={setChecklistRun} onEdit={setEditing} />
+                  <div id="operations-results">
+                    <p role="status" aria-live="polite" className="text-xs text-muted-foreground mb-2" data-testid="filter-result-count">
+                      Showing {visibleRows} of {totalRows} rows{input.trim() ? " · Filtered view; batch totals and KPIs are unchanged" : ""}
+                    </p>
+                    <OperationsTable groups={operationGroups} filter={input} onChecklist={setChecklistRun} onEdit={setEditing} />
+                  </div>
                 </TabsContent>
                 <TabsContent value="flow" className="mt-3">
                   <FlowView materials={materials} runs={runs} focus={focusRun} setFocus={setFocusRun} onEdit={setEditing} />

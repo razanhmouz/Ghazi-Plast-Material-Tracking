@@ -4,19 +4,21 @@ import { useState } from "react";
 import { DeleteDestination } from "@/components/delete-destination";
 import { Button } from "@/components/ui/button";
 import { fmt, InspPill } from "@/lib/trace-shared";
+import type { OperationsGroup } from "@/lib/operations-filter";
 
-export function OperationsTable({ runs, onChecklist, onEdit }: { runs: Run[]; onChecklist: (r: Run) => void; onEdit: (r: Run) => void }) {
+export function OperationsTable({ groups, filter, onChecklist, onEdit }: { groups: OperationsGroup[]; filter: string; onChecklist: (r: Run) => void; onEdit: (r: Run) => void }) {
   const [deleting, setDeleting] = useState<{ run: Run; index: number } | null>(null);
-  if (runs.length === 0) return <div className="rounded-xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground">No batches to show.</div>;
   return (
     <div className="rounded-xl border bg-card overflow-x-auto" data-testid="table-operations">
+      {groups.length === 0 && <p role="status" className="p-8 text-center text-sm text-muted-foreground">
+        {filter.trim() ? `No operations match “${filter.trim()}”. Try another keyword or clear the search.` : "No batches to show."}
+      </p>}
       <div className="md:min-w-[810px]">
       <div className="hidden md:grid grid-cols-[80px_1fr_70px_90px_110px_150px_36px] gap-3 px-4 py-2.5 micro border-b bg-secondary/60">
         <span>Batch</span><span>Destination</span><span className="text-right">Dest. qty</span><span>Ink lot</span><span>QC status</span><span className="text-right">QC Inspection Checklist</span>
         <span className="sr-only">Actions</span>
       </div>
-      {runs.map((r) => {
-        const dests = r.destinations.length ? r.destinations : [null];
+      {groups.map(({ run: r, rows }) => {
         const filled = r.checklist.length;
         return (
           <div key={r.id} data-testid={`group-batch-${r.id}`} className="border-b last:border-0">
@@ -24,7 +26,7 @@ export function OperationsTable({ runs, onChecklist, onEdit }: { runs: Run[]; on
               <span className="font-mono font-semibold">{r.id}</span>
               <span className="font-mono text-xs text-muted-foreground" data-testid={`text-batch-total-${r.id}`}>Batch total {fmt(r.quantity)} cups · split below</span>
             </div>
-            {dests.map((d, i) => (
+            {rows.map(({ destination: d, index: i }, visibleIndex) => (
               <div key={d?.id ?? `${d?.name}-${i}`} data-testid={`row-op-${r.id}-${i}`} className="grid grid-cols-2 md:grid-cols-[80px_1fr_70px_90px_110px_150px_36px] gap-3 px-4 py-3 items-center hover:bg-secondary/40 transition-colors">
                 <div className="font-mono text-xs text-muted-foreground">{r.id}<span className="block text-[10px]">of {fmt(r.quantity)}</span></div>
                 <div className="flex items-center gap-1.5 text-sm">
@@ -33,7 +35,7 @@ export function OperationsTable({ runs, onChecklist, onEdit }: { runs: Run[]; on
                 <div className="font-mono font-bold text-white tabular-nums text-right" data-testid={`text-dest-qty-${r.id}-${i}`}>{d ? fmt(d.quantity) : "—"}</div>
                 <div className="font-mono text-sm flex items-center gap-1">
                   {r.inkLot || <span className="text-accent text-xs font-sans">Missing</span>}
-                  {i === 0 && <button data-testid={`button-edit-ink-${r.id}`} onClick={() => onEdit(r)} className="p-1 rounded hover:bg-muted text-muted-foreground" aria-label={`Edit ink lot for ${r.id}`}><Pencil className="h-3 w-3" /></button>}
+                  {visibleIndex === 0 && <button data-testid={`button-edit-ink-${r.id}`} onClick={() => onEdit(r)} className="p-1 rounded hover:bg-muted text-muted-foreground" aria-label={`Edit ink lot for ${r.id}`}><Pencil className="h-3 w-3" /></button>}
                 </div>
                 <div className="flex items-center gap-2"><InspPill v={d?.inspectionResult ?? r.inspectionResult} /><span className="text-[10px] font-mono text-muted-foreground">{d?.inspectionResult ? "Row QC" : `${filled} checks`}</span></div>
                 <div className="md:text-right">

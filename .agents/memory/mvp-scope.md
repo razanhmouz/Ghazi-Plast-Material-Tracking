@@ -26,6 +26,12 @@ Quality Manager final actions are recorded instructions, not physical recall exe
 
 **How to apply:** Send only for new confirmed decisions to the configured recipient. The test sender can only reach the Resend account email; explain this restriction rather than silently reverting to Gmail or broadcasting. Do not reroute legacy queued notifications through a new provider. Keep shipment status and quantities unchanged. Sign-in is required to trigger email; manager labeling alone is not a verified role. Do not store recipient addresses in agent memory.
 
+The Operations search is a view-only global table filter, not a reduction of the batch scope used for quality decisions.
+
+**Why:** A customer-only search hides sibling destinations; treating the visible subset as a complete batch could record an incorrect recall/release quantity.
+
+**How to apply:** Preserve full batch objects and totals for actions, and original destination identity/index for deleting a filtered row. Filtering alone must not modify records, KPIs, or decision scope.
+
 The user permits deletion of one selected decision-history record, with confirmation, rather than clearing all history.
 
 **Why:** The user explicitly chose “A selected decision” when asked about the delete button’s scope.

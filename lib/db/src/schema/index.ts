@@ -19,5 +19,6 @@ export * from "./packaging-teams";
 //   export type Post = typeof postsTable.$inferSelect;
 
 export * from "./tracking";
+export * from "./quality-notifications";
 export * from "./auth";
 export * from "./packaging";

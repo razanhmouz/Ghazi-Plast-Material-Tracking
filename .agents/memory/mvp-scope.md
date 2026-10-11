@@ -20,11 +20,11 @@ Staff workflow: Production receives P-77 records and supplier documentation and 
 
 **How to apply:** Treat search and trace as read-only operations, and do not imply the workflow guide verifies document receipt.
 
-Quality Manager final actions are recorded internal instructions only, not automated customer notifications, recall execution, or physical shipment releases.
+Quality Manager final actions are recorded instructions, not physical recall execution or shipment releases. The user subsequently authorized Gmail notifications containing Decision history details for new recall and release decisions.
 
-**Why:** The user explicitly requires human-in-the-loop decision support and no automatic notification or recall.
+**Why:** The user explicitly requested email on new decisions and chose a fixed recipient, superseding the original no-notification scope without authorizing physical shipment changes.
 
-**How to apply:** Keep a confirmed decision history separate from shipment status and quantities. Shared-demo manager labeling is not verified identity or access control.
+**How to apply:** Send only for new confirmed decisions, not historical records. Keep shipment status and quantities unchanged. Sign-in is required to trigger email; manager labeling alone is not a verified role. Do not store recipient addresses in agent memory.
 
 The user permits deletion of one selected decision-history record, with confirmation, rather than clearing all history.
 

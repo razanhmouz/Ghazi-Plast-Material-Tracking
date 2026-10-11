@@ -42,3 +42,8 @@ timeoutMs = 20000
 [nix]
 channel = "stable-25_05"
 packages = ["clamav"]
+
+[userenv]
+
+[userenv.shared]
+QUALITY_NOTIFICATION_RECIPIENT = "hmouzrazan@gmail.com"

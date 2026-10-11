@@ -47,6 +47,7 @@ import type {
   PackagingSearchResult,
   QualityAction,
   QualityActionInput,
+  QualityEmailSettings,
   Run,
   RunUpdate,
   Trace
@@ -1806,6 +1807,77 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getSearchPackagingTraceMutationOptions(options));
     }
+
+export const getGetQualityEmailSettingsUrl = () => {
+
+
+
+
+  return `/api/quality-email-settings`
+}
+
+export const getQualityEmailSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<QualityEmailSettings> => {
+
+  return customFetch<QualityEmailSettings>(getGetQualityEmailSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetQualityEmailSettingsQueryKey = () => {
+    return [
+    `/api/quality-email-settings`
+    ] as const;
+    }
+
+
+export const getGetQualityEmailSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getQualityEmailSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getQualityEmailSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetQualityEmailSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getQualityEmailSettings>>> = ({ signal }) => getQualityEmailSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getQualityEmailSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetQualityEmailSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getQualityEmailSettings>>>
+export type GetQualityEmailSettingsQueryError = ErrorType<unknown>
+
+
+
+export function useGetQualityEmailSettings<TData = Awaited<ReturnType<typeof getQualityEmailSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getQualityEmailSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetQualityEmailSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListQualityActionsUrl = () => {
 

@@ -1,17 +1,33 @@
 import { Router, type IRouter } from "express";
-import { db, productionRuns, qualityActions } from "@workspace/db";
+import { db, productionRuns, qualityActions, qualityNotifications } from "@workspace/db";
 import { desc, eq, inArray } from "drizzle-orm";
 import { ListQualityActionsResponse, RecordQualityActionBody, RecordQualityActionResponse, DeleteQualityActionParams } from "@workspace/api-zod";
+import { decisionEmail, notificationRecipient } from "../lib/quality-email";
 
 const router: IRouter = Router();
-const serialize = (r: typeof qualityActions.$inferSelect) => ({...r, createdAt: r.createdAt.toISOString()});
+const serialize = (r: typeof qualityActions.$inferSelect, email?: typeof qualityNotifications.$inferSelect) => ({
+  ...r, createdAt: r.createdAt.toISOString(),
+  emailStatus: email?.status ?? "not_requested", emailRecipient: email?.recipient,
+  emailError: email?.error ?? undefined, emailSentAt: email?.sentAt?.toISOString(),
+});
+
+router.get("/quality-email-settings", (req, res): void => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Log in to record and email decisions." }); return; }
+  const recipient = notificationRecipient();
+  res.json({ recipient: recipient ?? "", enabled: !!recipient });
+});
 
 router.get("/quality-actions", async (_req, res): Promise<void> => {
   const rows = await db.select().from(qualityActions).orderBy(desc(qualityActions.createdAt));
-  res.json(ListQualityActionsResponse.parse(rows.map(serialize)));
+  const emails = rows.length ? await db.select().from(qualityNotifications).where(inArray(qualityNotifications.requestId, rows.map(r => r.requestId))) : [];
+  const byId = new Map(emails.map(email => [email.requestId, email]));
+  res.json(ListQualityActionsResponse.parse(rows.map(row => serialize(row, byId.get(row.requestId)))));
 });
 
 router.post("/quality-actions", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Log in before recording and emailing a decision." }); return; }
+  const recipient = notificationRecipient();
+  if (!recipient) { res.status(503).json({ error: "A notification recipient must be configured before recording a new decision." }); return; }
   const parsed = RecordQualityActionBody.safeParse(req.body);
   if (!parsed.success || !parsed.data.rationale.trim()) {
     res.status(400).json({error: "Select batches, an action, and a non-empty rationale."}); return;
@@ -30,12 +46,18 @@ router.post("/quality-actions", async (req, res): Promise<void> => {
       return {error: "All selected batches must pass inspection before Release Shipment can be recorded.", status: 400};
     }
     const [created] = await tx.insert(qualityActions).values({...input, quantity: runs.reduce((sum, r) => sum + r.quantity, 0)}).onConflictDoNothing().returning();
-    if (created) return {row: created};
+    if (created) {
+      await tx.insert(qualityNotifications).values({
+        requestId: created.requestId, recipient, ...decisionEmail(created, runs),
+      }).onConflictDoNothing();
+      return {row: created};
+    }
     const [existing] = await tx.select().from(qualityActions).where(eq(qualityActions.requestId, input.requestId));
     return existing && matches(existing) ? {row: existing} : {error: "Request identifier already used for a different decision.", status: 409};
   });
   if ("error" in result) { res.status(result.status ?? 400).json({error: result.error}); return; }
-  res.json(RecordQualityActionResponse.parse(serialize(result.row)));
+  const [email] = await db.select().from(qualityNotifications).where(eq(qualityNotifications.requestId, result.row.requestId));
+  res.json(RecordQualityActionResponse.parse(serialize(result.row, email)));
 });
 
 router.delete("/quality-actions/:requestId", async (req, res): Promise<void> => {

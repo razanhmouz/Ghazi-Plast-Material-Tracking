@@ -296,6 +296,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PackagingSearchResult" }
+  /quality-email-settings:
+    get:
+      operationId: getQualityEmailSettings
+      responses:
+        "200":
+          description: Configured notification recipient for signed-in staff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QualityEmailSettings"
   /quality-actions:
     get:
       operationId: listQualityActions
@@ -430,6 +440,12 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    QualityEmailSettings:
+      type: object
+      required: [recipient, enabled]
+      properties:
+        recipient: { type: string }
+        enabled: { type: boolean }
     DestinationDeleteInput:
       type: object
       required: [expectedQuantity, expectedDestinations]
@@ -665,6 +681,10 @@ components:
       type: object
       required: [requestId, action, batchIds, rationale, createdAt, quantity]
       properties:
+        emailStatus: { type: string, enum: [not_requested, queued, sending, sent, failed, unknown] }
+        emailRecipient: { type: string }
+        emailError: { type: string }
+        emailSentAt: { type: string }
         requestId: { type: string }
         action: { type: string, enum: [recall, release] }
         batchIds:

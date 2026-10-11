@@ -5,6 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface QualityEmailSettings {
+  recipient: string;
+  enabled: boolean;
+}
+
 export type DestinationInspectionResult = typeof DestinationInspectionResult[keyof typeof DestinationInspectionResult];
 
 
@@ -436,6 +441,18 @@ export interface QualityActionInput {
   rationale: string;
 }
 
+export type QualityActionEmailStatus = typeof QualityActionEmailStatus[keyof typeof QualityActionEmailStatus];
+
+
+export const QualityActionEmailStatus = {
+  not_requested: 'not_requested',
+  queued: 'queued',
+  sending: 'sending',
+  sent: 'sent',
+  failed: 'failed',
+  unknown: 'unknown',
+} as const;
+
 export type QualityActionAction = typeof QualityActionAction[keyof typeof QualityActionAction];
 
 
@@ -445,6 +462,10 @@ export const QualityActionAction = {
 } as const;
 
 export interface QualityAction {
+  emailStatus?: QualityActionEmailStatus;
+  emailRecipient?: string;
+  emailError?: string;
+  emailSentAt?: string;
   requestId: string;
   action: QualityActionAction;
   batchIds: string[];

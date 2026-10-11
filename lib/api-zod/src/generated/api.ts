@@ -686,7 +686,17 @@ export const SearchPackagingTraceResponse = zod.object({
 })
 
 
+export const GetQualityEmailSettingsResponse = zod.object({
+  "recipient": zod.string(),
+  "enabled": zod.boolean()
+})
+
+
 export const ListQualityActionsResponseItem = zod.object({
+  "emailStatus": zod.enum(['not_requested', 'queued', 'sending', 'sent', 'failed', 'unknown']).optional(),
+  "emailRecipient": zod.string().optional(),
+  "emailError": zod.string().optional(),
+  "emailSentAt": zod.string().optional(),
   "requestId": zod.string(),
   "action": zod.enum(['recall', 'release']),
   "batchIds": zod.array(zod.string()),
@@ -713,6 +723,10 @@ export const RecordQualityActionBody = zod.object({
 })
 
 export const RecordQualityActionResponse = zod.object({
+  "emailStatus": zod.enum(['not_requested', 'queued', 'sending', 'sent', 'failed', 'unknown']).optional(),
+  "emailRecipient": zod.string().optional(),
+  "emailError": zod.string().optional(),
+  "emailSentAt": zod.string().optional(),
   "requestId": zod.string(),
   "action": zod.enum(['recall', 'release']),
   "batchIds": zod.array(zod.string()),

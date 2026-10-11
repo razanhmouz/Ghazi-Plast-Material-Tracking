@@ -6,8 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { QualityActionAction } from './qualityActionAction';
+import type { QualityActionEmailStatus } from './qualityActionEmailStatus';
 
 export interface QualityAction {
+  emailStatus?: QualityActionEmailStatus;
+  emailRecipient?: string;
+  emailError?: string;
+  emailSentAt?: string;
   requestId: string;
   action: QualityActionAction;
   batchIds: string[];

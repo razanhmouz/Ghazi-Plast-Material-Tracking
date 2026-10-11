@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useListQualityActions, useRecordQualityAction, useDeleteQualityAction, getListQualityActionsQueryKey } from "@workspace/api-client-react";
+import { useListQualityActions, useRecordQualityAction, useDeleteQualityAction, getListQualityActionsQueryKey, useGetQualityEmailSettings, getGetQualityEmailSettingsQueryKey } from "@workspace/api-client-react";
+import { useAuth } from "@workspace/replit-auth-web";
 import type { QualityAction, QualityActionInput, Run } from "@workspace/api-client-react";
 import { Gavel, History, OctagonAlert, PackageCheck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,9 @@ const ACT: Record<Action, { label: string; verb: string; Icon: typeof Gavel; cls
 export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const history = useListQualityActions({ query: { queryKey: getListQualityActionsQueryKey(), refetchInterval: 30000, refetchOnWindowFocus: true } });
+  const auth = useAuth();
+  const emailSettings = useGetQualityEmailSettings({ query: { queryKey: getGetQualityEmailSettingsQueryKey(), enabled: auth.isAuthenticated, staleTime: 0 } });
+  const history = useListQualityActions({ query: { queryKey: getListQualityActionsQueryKey(), refetchInterval: 5000, refetchOnWindowFocus: true } });
   const record = useRecordQualityAction();
   const [action, setAction] = useState<Action | null>(null);
   const [sel, setSel] = useState<string[]>([]);
@@ -44,12 +47,12 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
   };
 
   const confirm = () => {
-    if (!canReview || record.isPending) return;
+    if (!canReview || record.isPending || !auth.isAuthenticated || !emailSettings.data?.enabled) return;
     record.mutate({ data: payload() }, {
       onSuccess: (a) => {
         qc.invalidateQueries({ queryKey: getListQualityActionsQueryKey() });
         invalidateTrace(qc);
-        toast({ title: `${ACT[a.action].verb} recorded`, description: `${a.batchIds.join(", ")} · internal record only, nothing was sent.` });
+        toast({ title: `${ACT[a.action].verb} recorded`, description: `${a.batchIds.join(", ")} · email ${a.emailStatus === "sent" ? "accepted by Gmail" : "queued"}. See Decision history for sending status.` });
         reqRef.current = null;
         setConfirming(false); setAction(null); setSel([]); setRationale("");
       },
@@ -112,8 +115,15 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
             <Textarea id="qa-rationale" data-testid="input-rationale" maxLength={5000} rows={3} className="mt-1.5" placeholder="Why this decision, what evidence was reviewed" value={rationale} onChange={(e) => setRationale(e.target.value)} />
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Button data-testid="button-review-action" disabled={!canReview} onClick={() => setConfirming(true)}>Review and confirm</Button>
+            <Button data-testid="button-review-action" disabled={!canReview || !auth.isAuthenticated || !emailSettings.data?.enabled} onClick={() => setConfirming(true)}>Review and confirm</Button>
             {sel.length > 0 && <span className="font-mono text-xs text-muted-foreground">{sel.length} batch{sel.length > 1 ? "es" : ""} · {fmt(qty)} cups</span>}
+          </div>
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-2">
+            {!auth.isAuthenticated ? <><p>Log in to record a decision and send its Gmail notification.</p><Button size="sm" variant="outline" disabled={auth.isLoading} onClick={auth.login}>Log in</Button></>
+              : emailSettings.isError ? <><p role="alert">Notification settings could not be loaded.</p><Button size="sm" variant="outline" onClick={() => void emailSettings.refetch()}>Retry settings</Button></>
+              : emailSettings.isLoading ? <p>Loading notification settings…</p>
+              : emailSettings.data?.enabled ? <p>Each confirmed decision emails its details to <strong className="break-all">{emailSettings.data.recipient}</strong>. Sending status appears in Decision history.</p>
+              : <p role="alert">Email notifications are not configured. New decisions cannot be recorded yet.</p>}
           </div>
         </div>
         <DecisionHistory q={history} />
@@ -122,7 +132,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{action && ACT[action].label}?</DialogTitle>
-            <DialogDescription>This saves an internal instruction only. It does not notify customers, execute a recall, dispatch goods, or change shipment quantities or statuses.</DialogDescription>
+            <DialogDescription>This records the instruction and emails its details to {emailSettings.data?.recipient}. It does not execute a physical recall, dispatch goods, change shipment quantities or statuses, or notify other recipients.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <div className="rounded-lg border divide-y">
@@ -181,6 +191,13 @@ function DecisionHistory({ q }: { q: { data?: QualityAction[]; isLoading: boolea
                   </div>
                   <p className="text-sm mt-1.5 whitespace-pre-wrap break-words">{a.rationale}</p>
                   <div className="font-mono text-[10px] text-muted-foreground mt-1">{new Date(a.createdAt).toLocaleString()} · internal instruction, not executed</div>
+                  <div className={cn("text-xs mt-2 break-words", a.emailStatus === "sent" ? "text-emerald-400" : a.emailStatus === "failed" || a.emailStatus === "unknown" ? "text-amber-400" : "text-muted-foreground")}>
+                    {!a.emailStatus || a.emailStatus === "not_requested" ? "Email not requested · historical decision"
+                      : a.emailStatus === "sent" ? `Email accepted by Gmail · ${a.emailRecipient}${a.emailSentAt ? ` · ${new Date(a.emailSentAt).toLocaleString()}` : ""}`
+                      : a.emailStatus === "queued" ? `Email queued · ${a.emailRecipient}`
+                      : a.emailStatus === "sending" ? `Sending email · ${a.emailRecipient}`
+                      : `${a.emailStatus === "failed" ? "Email failed" : "Email status uncertain"} · ${a.emailRecipient}. ${a.emailError ?? "Check Gmail before sending again."}`}
+                  </div>
                 </li>
               );
             })}
@@ -195,7 +212,7 @@ function DecisionHistory({ q }: { q: { data?: QualityAction[]; isLoading: boolea
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete this decision?</DialogTitle>
-            <DialogDescription>This permanently removes only the selected history record. It cannot be undone. Batch quality decisions, shipments, and quantities will not change.</DialogDescription>
+            <DialogDescription>This permanently removes only the selected history record. It cannot be undone. It does not cancel queued email or retract sent email. Batch quality decisions, shipments, and quantities will not change.</DialogDescription>
           </DialogHeader>
           {deleting && <div className="rounded-lg border p-3 text-sm space-y-2">
             <p className="font-semibold">{ACT[deleting.action].label} · {deleting.batchIds.join(", ")}</p>

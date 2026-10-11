@@ -61,9 +61,9 @@ export function WorkflowProgress({ resultsReady }: { resultsReady: boolean }) {
               className={`relative p-4 border-b last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 ${active ? "bg-primary/[0.06]" : ""}`}>
               {active && <span className="absolute inset-x-0 top-0 h-0.5 bg-primary" aria-hidden />}
               <div className="flex items-center gap-2.5 mb-2">
-                <span className={`h-6 w-6 rounded-full border flex items-center justify-center text-[11px] font-mono font-semibold shrink-0 ${active ? "bg-primary text-primary-foreground border-primary" : done ? "border-primary/60 text-primary" : "border-border text-muted-foreground"}`}>
+                {n !== 3 && <span className={`h-6 w-6 rounded-full border flex items-center justify-center text-[11px] font-mono font-semibold shrink-0 ${active ? "bg-primary text-primary-foreground border-primary" : done ? "border-primary/60 text-primary" : "border-border text-muted-foreground"}`}>
                   {String(n).padStart(2, "0")}
-                </span>
+                </span>}
                 <h3 className="font-semibold text-sm leading-tight">{step.title}</h3>
               </div>
               <p className="micro !text-primary/90 mb-1">{step.owner}</p>

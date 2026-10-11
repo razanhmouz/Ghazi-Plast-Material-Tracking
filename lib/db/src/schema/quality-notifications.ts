@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 // Kept independently of deletable decision history to prevent replayed sends.
 export const qualityNotifications = pgTable("quality_notifications", {
@@ -12,6 +12,7 @@ export const qualityNotifications = pgTable("quality_notifications", {
   status: text("status").notNull().default("queued"),
   error: text("error"),
   messageId: text("message_id"),
+  retryAudit: jsonb("retry_audit").$type<{ at: string; actor: string; priorStatus: string; reconciliation: string }[]>().notNull().default([]),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   sentAt: timestamp("sent_at", { withTimezone: true }),

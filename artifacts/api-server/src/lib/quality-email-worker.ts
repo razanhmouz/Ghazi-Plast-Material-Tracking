@@ -24,16 +24,16 @@ export function startQualityEmailWorker() {
         const [next] = await tx.select().from(qualityNotifications).where(and(eq(qualityNotifications.status, "queued"), eq(qualityNotifications.provider, "resend")))
           .orderBy(qualityNotifications.createdAt).limit(1).for("update", { skipLocked: true });
         if (!next) return undefined;
-        await tx.update(qualityNotifications).set({ status: "sending", updatedAt: new Date() })
-          .where(eq(qualityNotifications.requestId, next.requestId));
-        return next;
+        const [claimed] = await tx.update(qualityNotifications).set({ status: "sending", updatedAt: new Date() })
+          .where(eq(qualityNotifications.requestId, next.requestId)).returning();
+        return claimed;
       });
       if (!item) return;
       const result = await deliverDecisionEmail(item);
       await db.update(qualityNotifications).set({
         status: result.status, error: result.error ?? null, messageId: result.messageId ?? null,
         sentAt: result.status === "sent" ? new Date() : null, updatedAt: new Date(),
-      }).where(and(eq(qualityNotifications.requestId, item.requestId), eq(qualityNotifications.status, "sending")));
+      }).where(and(eq(qualityNotifications.requestId, item.requestId), eq(qualityNotifications.status, "sending"), eq(qualityNotifications.updatedAt, item.updatedAt)));
     } catch {
       logger.error("Quality email worker failed; queued records are retained");
     } finally { busy = false; }

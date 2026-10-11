@@ -3,8 +3,10 @@ import { db, productionRuns, qualityActions, qualityNotifications } from "@works
 import { desc, eq, inArray } from "drizzle-orm";
 import { ListQualityActionsResponse, RecordQualityActionBody, RecordQualityActionResponse, DeleteQualityActionParams } from "@workspace/api-zod";
 import { decisionEmail, getEmailConfiguration } from "../lib/quality-email";
+import { qualityEmailRetryRouter } from "./quality-email-retry";
 
 const router: IRouter = Router();
+router.use(qualityEmailRetryRouter);
 const serialize = (r: typeof qualityActions.$inferSelect, email?: typeof qualityNotifications.$inferSelect) => ({
   ...r, createdAt: r.createdAt.toISOString(),
   emailStatus: email?.status ?? "not_requested", emailRecipient: email ? `${email.recipient.split(",").length} email recipient(s)` : undefined,

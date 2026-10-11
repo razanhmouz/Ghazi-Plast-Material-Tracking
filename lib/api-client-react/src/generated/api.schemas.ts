@@ -5,6 +5,31 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface QualityRetryPreview {
+  version: string;
+  recipient: string;
+  currentRecipient: string;
+  sender: string;
+  subject: string;
+  body: string;
+  requiresReconciliation: boolean;
+  /** @nullable */
+  blockedReason: string | null;
+  expiresAt: string;
+}
+
+export interface QualityRetryConfirmation {
+  /**
+     * @minLength 64
+     * @maxLength 64
+     */
+  version: string;
+  confirmed: true;
+  logsCheckedNoAcceptance?: boolean;
+  /** @maxLength 2000 */
+  reconciliation?: string;
+}
+
 export interface QualityEmailSettings {
   recipient: string;
   enabled: boolean;
@@ -618,6 +643,10 @@ export type ExchangeMobileAuthorizationCode200 = {
 
 export type LogoutMobileSession200 = {
   success: boolean;
+};
+
+export type ConfirmQualityEmailRetry200 = {
+  status: string;
 };
 
 export type GetTraceParams = {

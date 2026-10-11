@@ -22,6 +22,7 @@ import type {
 import type {
   AuthUserEnvelope,
   BeginBrowserLoginParams,
+  ConfirmQualityEmailRetry200,
   DestinationDeleteInput,
   DestinationInput,
   EvidenceAccessHistory,
@@ -48,6 +49,8 @@ import type {
   QualityAction,
   QualityActionInput,
   QualityEmailSettings,
+  QualityRetryConfirmation,
+  QualityRetryPreview,
   Run,
   RunUpdate,
   Trace
@@ -1878,6 +1881,160 @@ export function useGetQualityEmailSettings<TData = Awaited<ReturnType<typeof get
 
 
 
+
+export const getPreviewQualityEmailRetryUrl = (requestId: string,) => {
+
+
+
+
+  return `/api/quality-actions/${requestId}/email-retry`
+}
+
+export const previewQualityEmailRetry = async (requestId: string, options?: Parameters<typeof customFetch>[1]): Promise<QualityRetryPreview> => {
+
+  return customFetch<QualityRetryPreview>(getPreviewQualityEmailRetryUrl(requestId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getPreviewQualityEmailRetryQueryKey = (requestId: string,) => {
+    return [
+    `/api/quality-actions/${requestId}/email-retry`
+    ] as const;
+    }
+
+
+export const getPreviewQualityEmailRetryQueryOptions = <TData = Awaited<ReturnType<typeof previewQualityEmailRetry>>, TError = ErrorType<void>>(requestId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof previewQualityEmailRetry>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPreviewQualityEmailRetryQueryKey(requestId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof previewQualityEmailRetry>>> = ({ signal }) => previewQualityEmailRetry(requestId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: requestId !== null && requestId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof previewQualityEmailRetry>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type PreviewQualityEmailRetryQueryResult = NonNullable<Awaited<ReturnType<typeof previewQualityEmailRetry>>>
+export type PreviewQualityEmailRetryQueryError = ErrorType<void>
+
+
+
+export function usePreviewQualityEmailRetry<TData = Awaited<ReturnType<typeof previewQualityEmailRetry>>, TError = ErrorType<void>>(
+ requestId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof previewQualityEmailRetry>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getPreviewQualityEmailRetryQueryOptions(requestId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getConfirmQualityEmailRetryUrl = (requestId: string,) => {
+
+
+
+
+  return `/api/quality-actions/${requestId}/email-retry`
+}
+
+export const confirmQualityEmailRetry = async (requestId: string,
+    qualityRetryConfirmation: QualityRetryConfirmation, options?: Parameters<typeof customFetch>[1]): Promise<ConfirmQualityEmailRetry200> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ConfirmQualityEmailRetry200>(getConfirmQualityEmailRetryUrl(requestId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(qualityRetryConfirmation)
+  }
+);}
+
+
+
+
+
+export const getConfirmQualityEmailRetryMutationKey = () => ['confirmQualityEmailRetry'] as const;
+
+export const getConfirmQualityEmailRetryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmQualityEmailRetry>>, TError,ConfirmQualityEmailRetryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmQualityEmailRetry>>, TError,ConfirmQualityEmailRetryMutationVariables, TContext> => {
+
+const mutationKey = getConfirmQualityEmailRetryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmQualityEmailRetry>>, ConfirmQualityEmailRetryMutationVariables> = (props) => {
+          const {requestId,data} = props ?? {};
+
+          return  confirmQualityEmailRetry(requestId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmQualityEmailRetryMutationResult = NonNullable<Awaited<ReturnType<typeof confirmQualityEmailRetry>>>
+    export type ConfirmQualityEmailRetryMutationBody = BodyType<QualityRetryConfirmation>
+    export type ConfirmQualityEmailRetryMutationError = ErrorType<void>
+    export type ConfirmQualityEmailRetryMutationVariables = {requestId: string;data: BodyType<QualityRetryConfirmation>}
+
+    export const useConfirmQualityEmailRetry = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmQualityEmailRetry>>, TError,ConfirmQualityEmailRetryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof confirmQualityEmailRetry>>,
+        TError,
+        ConfirmQualityEmailRetryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConfirmQualityEmailRetryMutationOptions(options));
+    }
 
 export const getListQualityActionsUrl = () => {
 

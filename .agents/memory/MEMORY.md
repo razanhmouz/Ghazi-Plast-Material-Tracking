@@ -3,3 +3,4 @@
 - [Packaging evidence](packaging-evidence.md) — Opt-in evidence teams are sharing groups, not verified company directories; preserve private defaults and unverified labels.
 - [Packaging concurrency](packaging-concurrency.md) — Timestamp preconditions need client-visible precision, strict advancement, and explicit draft reconciliation.
 - [API codegen collisions](api-codegen-collisions.md) — Orval path validators and query types can collide at barrel exports.
+- [Decision email retries](decision-email-retries.md) — Preserve immutable payloads; require log reconciliation for unknown outcomes and block retries outside retention.

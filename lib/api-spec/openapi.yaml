@@ -306,6 +306,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/QualityEmailSettings"
+  /quality-actions/{requestId}/email-retry:
+    parameters:
+      - name: requestId
+        in: path
+        required: true
+        schema: { type: string, minLength: 1 }
+    get:
+      operationId: previewQualityEmailRetry
+      responses:
+        "200":
+          description: Authenticated immutable retry preview
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/QualityRetryPreview" }
+        "401": { description: Login required }
+        "404": { description: Decision or notification missing }
+    post:
+      operationId: confirmQualityEmailRetry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QualityRetryConfirmation" }
+      responses:
+        "200":
+          description: Attempt completed; refresh decision history
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string }
+        "400": { description: Invalid confirmation }
+        "401": { description: Login required }
+        "404": { description: Decision or notification missing }
+        "409": { description: Stale preview or unsafe retry }
   /quality-actions:
     get:
       operationId: listQualityActions
@@ -440,6 +477,27 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    QualityRetryPreview:
+      type: object
+      required: [version, recipient, currentRecipient, sender, subject, body, requiresReconciliation, blockedReason, expiresAt]
+      properties:
+        version: { type: string }
+        recipient: { type: string }
+        currentRecipient: { type: string }
+        sender: { type: string }
+        subject: { type: string }
+        body: { type: string }
+        requiresReconciliation: { type: boolean }
+        blockedReason: { type: ["string", "null"] }
+        expiresAt: { type: string }
+    QualityRetryConfirmation:
+      type: object
+      required: [version, confirmed]
+      properties:
+        version: { type: string, minLength: 64, maxLength: 64 }
+        confirmed: { type: boolean, enum: [true] }
+        logsCheckedNoAcceptance: { type: boolean }
+        reconciliation: { type: string, maxLength: 2000 }
     QualityEmailSettings:
       type: object
       required: [recipient, enabled]

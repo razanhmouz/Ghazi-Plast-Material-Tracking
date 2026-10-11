@@ -69,7 +69,7 @@ export async function deliverDecisionEmail(notification: Notification, send: Sen
           signal: controller.signal,
         });
         if (!response.ok) return {
-          status: response.status >= 500 || response.status === 408 ? "unknown" : "failed",
+          status: response.status >= 500 || response.status === 408 || response.status === 409 ? "unknown" : "failed",
           error: response.status === 401 ? "Resend rejected the API key. Check RESEND_API_KEY on the server."
             : response.status === 403 ? "Resend denied sending. With onboarding@resend.dev, the recipient must be your Resend account email; otherwise use a verified-domain sender. Also check the API key's sending permissions."
             : response.status === 429 ? "Resend's sending limit was reached. The decision is saved, but email was not accepted."

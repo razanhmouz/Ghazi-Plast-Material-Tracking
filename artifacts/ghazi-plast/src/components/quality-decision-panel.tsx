@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { QualityEmailRetryButton } from "./quality-email-retry-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListQualityActions, useRecordQualityAction, useDeleteQualityAction, getListQualityActionsQueryKey, useGetQualityEmailSettings, getGetQualityEmailSettingsQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@workspace/replit-auth-web";
@@ -198,6 +199,7 @@ function DecisionHistory({ q }: { q: { data?: QualityAction[]; isLoading: boolea
                       : a.emailStatus === "sending" ? `Sending email · ${a.emailRecipient}`
                       : `${a.emailStatus === "failed" ? "Email failed" : "Email status uncertain"} · ${a.emailRecipient}. ${a.emailError ?? "Check the email provider's logs before sending again."}`}
                   </div>
+                  {(a.emailStatus === "failed" || a.emailStatus === "unknown") && <QualityEmailRetryButton requestId={a.requestId} />}
                 </li>
               );
             })}

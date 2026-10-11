@@ -692,6 +692,52 @@ export const GetQualityEmailSettingsResponse = zod.object({
 })
 
 
+
+
+
+export const PreviewQualityEmailRetryParams = zod.object({
+  "requestId": zod.coerce.string().min(1)
+})
+
+export const PreviewQualityEmailRetryResponse = zod.object({
+  "version": zod.string(),
+  "recipient": zod.string(),
+  "currentRecipient": zod.string(),
+  "sender": zod.string(),
+  "subject": zod.string(),
+  "body": zod.string(),
+  "requiresReconciliation": zod.boolean(),
+  "blockedReason": zod.string().nullable(),
+  "expiresAt": zod.string()
+})
+
+
+
+
+
+export const ConfirmQualityEmailRetryParams = zod.object({
+  "requestId": zod.coerce.string().min(1)
+})
+
+export const confirmQualityEmailRetryBodyVersionMin = 64;
+export const confirmQualityEmailRetryBodyVersionMax = 64;
+
+export const confirmQualityEmailRetryBodyReconciliationMax = 2000;
+
+
+
+export const ConfirmQualityEmailRetryBody = zod.object({
+  "version": zod.string().min(confirmQualityEmailRetryBodyVersionMin).max(confirmQualityEmailRetryBodyVersionMax),
+  "confirmed": zod.literal(true),
+  "logsCheckedNoAcceptance": zod.boolean().optional(),
+  "reconciliation": zod.string().max(confirmQualityEmailRetryBodyReconciliationMax).optional()
+})
+
+export const ConfirmQualityEmailRetryResponse = zod.object({
+  "status": zod.string()
+})
+
+
 export const ListQualityActionsResponseItem = zod.object({
   "emailStatus": zod.enum(['not_requested', 'queued', 'sending', 'sent', 'failed', 'unknown']).optional(),
   "emailRecipient": zod.string().optional(),

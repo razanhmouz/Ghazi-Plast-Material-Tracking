@@ -29,7 +29,7 @@ test("Resend acceptance returns sent with correct JSON and server-side authentic
 });
 
 test("permission failures and ambiguous responses never retry automatically", async () => {
-  for (const [code, status] of [[401, "failed"], [403, "failed"], [409, "failed"], [422, "failed"], [429, "failed"], [500, "unknown"], [408, "unknown"]] as const) {
+  for (const [code, status] of [[401, "failed"], [403, "failed"], [409, "unknown"], [422, "failed"], [429, "failed"], [500, "unknown"], [408, "unknown"]] as const) {
     let calls = 0;
     const result = await deliver(async () => { calls++; return new Response("Do not expose arbitrary provider response text", { status: code }); });
     assert.equal(result.status, status);

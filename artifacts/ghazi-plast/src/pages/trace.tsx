@@ -5,6 +5,7 @@ import { OperationsTable } from "@/components/operations-table";
 import { ChecklistDialog } from "@/components/checklist-dialog";
 import { QualityDecisionPanel } from "@/components/quality-decision-panel";
 import { OwnerVerification } from "@/components/owner-verification";
+import { AccountControl } from "@/components/account-control";
 import { AddDestination } from "@/components/add-destination";
 import { INSP, REL, fmt, Pill, InspPill, invalidateTrace, type Insp, type Rel } from "@/lib/trace-shared";
 import type { Run, Material, RunUpdate } from "@workspace/api-client-react";
@@ -92,6 +93,7 @@ export default function TracePage() {
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <OwnerVerification />
+            <AccountControl />
           </div>
         </div>
       </header>

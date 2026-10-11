@@ -387,6 +387,34 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Run" }
+  /runs/{id}/destinations/{index}:
+    delete:
+      operationId: deleteDestination
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: index
+          required: true
+          schema: { type: integer, minimum: 0 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDeleteInput"
+      responses:
+        "200":
+          description: Updated batch after removing the selected destination and quantity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Run" }
+        "409":
+          description: Destinations changed; reload and select the row again
+        "404":
+          description: Batch or destination not found
   /healthz:
     get:
       operationId: healthCheck
@@ -402,6 +430,14 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    DestinationDeleteInput:
+      type: object
+      required: [expectedQuantity, expectedDestinations]
+      properties:
+        expectedQuantity: { type: integer, minimum: 0 }
+        expectedDestinations:
+          type: array
+          items: { $ref: "#/components/schemas/Destination" }
     PackagingScannerHealth:
       type: object
       required: [status, definitions, definitionsCheckedAt, lastCheckAt, lastSuccessAt, consecutiveFailures, queued, errors, oldestQueuedAt, aging]

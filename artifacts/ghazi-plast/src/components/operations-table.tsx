@@ -1,15 +1,19 @@
 import type { Run } from "@workspace/api-client-react";
-import { ClipboardCheck, Pencil, Truck, Warehouse } from "lucide-react";
+import { ClipboardCheck, Pencil, Truck, Warehouse, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { DeleteDestination } from "@/components/delete-destination";
 import { Button } from "@/components/ui/button";
 import { fmt, InspPill } from "@/lib/trace-shared";
 
 export function OperationsTable({ runs, onChecklist, onEdit }: { runs: Run[]; onChecklist: (r: Run) => void; onEdit: (r: Run) => void }) {
+  const [deleting, setDeleting] = useState<{ run: Run; index: number } | null>(null);
   if (runs.length === 0) return <div className="rounded-xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground">No batches to show.</div>;
   return (
     <div className="rounded-xl border bg-card overflow-x-auto" data-testid="table-operations">
-      <div className="md:min-w-[760px]">
-      <div className="hidden md:grid grid-cols-[80px_1fr_70px_90px_110px_150px] gap-3 px-4 py-2.5 micro border-b bg-secondary/60">
+      <div className="md:min-w-[810px]">
+      <div className="hidden md:grid grid-cols-[80px_1fr_70px_90px_110px_150px_36px] gap-3 px-4 py-2.5 micro border-b bg-secondary/60">
         <span>Batch</span><span>Destination</span><span className="text-right">Dest. qty</span><span>Ink lot</span><span>QC status</span><span className="text-right">QC Inspection Checklist</span>
+        <span className="sr-only">Actions</span>
       </div>
       {runs.map((r) => {
         const dests = r.destinations.length ? r.destinations : [null];
@@ -21,7 +25,7 @@ export function OperationsTable({ runs, onChecklist, onEdit }: { runs: Run[]; on
               <span className="font-mono text-xs text-muted-foreground" data-testid={`text-batch-total-${r.id}`}>Batch total {fmt(r.quantity)} cups · split below</span>
             </div>
             {dests.map((d, i) => (
-              <div key={d?.id ?? `${d?.name}-${i}`} data-testid={`row-op-${r.id}-${i}`} className="grid grid-cols-2 md:grid-cols-[80px_1fr_70px_90px_110px_150px] gap-3 px-4 py-3 items-center hover:bg-secondary/40 transition-colors">
+              <div key={d?.id ?? `${d?.name}-${i}`} data-testid={`row-op-${r.id}-${i}`} className="grid grid-cols-2 md:grid-cols-[80px_1fr_70px_90px_110px_150px_36px] gap-3 px-4 py-3 items-center hover:bg-secondary/40 transition-colors">
                 <div className="font-mono text-xs text-muted-foreground">{r.id}<span className="block text-[10px]">of {fmt(r.quantity)}</span></div>
                 <div className="flex items-center gap-1.5 text-sm">
                   {d ? (<>{d.type === "shipped" ? <Truck className="h-3.5 w-3.5 text-primary" /> : <Warehouse className="h-3.5 w-3.5 text-muted-foreground" />}{d.name}</>) : <span className="text-muted-foreground text-xs">No destination recorded</span>}
@@ -32,10 +36,17 @@ export function OperationsTable({ runs, onChecklist, onEdit }: { runs: Run[]; on
                   {i === 0 && <button data-testid={`button-edit-ink-${r.id}`} onClick={() => onEdit(r)} className="p-1 rounded hover:bg-muted text-muted-foreground" aria-label={`Edit ink lot for ${r.id}`}><Pencil className="h-3 w-3" /></button>}
                 </div>
                 <div className="flex items-center gap-2"><InspPill v={d?.inspectionResult ?? r.inspectionResult} /><span className="text-[10px] font-mono text-muted-foreground">{d?.inspectionResult ? "Row QC" : `${filled} checks`}</span></div>
-                <div className="col-span-2 md:col-span-1 md:text-right">
+                <div className="md:text-right">
                   <Button size="sm" variant="outline" data-testid={`link-checklist-${r.id}-${i}`} onClick={() => onChecklist(r)}>
                     <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />Open checklist
                   </Button>
+                </div>
+                <div className="justify-self-end">
+                  {d && <Button size="icon" variant="outline" className="h-8 w-8 text-red-400 border-red-400/40 bg-red-500/5 shadow-[0_0_10px_rgba(248,113,113,0.18)] hover:bg-red-500/15 hover:text-red-300"
+                    aria-label={`Delete destination ${d.name} from ${r.id}`} title="Delete Destination"
+                    data-testid={`button-delete-destination-${r.id}-${i}`} onClick={() => setDeleting({ run: r, index: i })}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>}
                 </div>
               </div>
             ))}
@@ -43,6 +54,7 @@ export function OperationsTable({ runs, onChecklist, onEdit }: { runs: Run[]; on
         );
       })}
       </div>
+      {deleting && <DeleteDestination run={deleting.run} index={deleting.index} close={() => setDeleting(null)} />}
     </div>
   );
 }

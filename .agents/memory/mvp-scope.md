@@ -37,3 +37,9 @@ Adding a destination adds its quantity to batch production and shipped/inventory
 **Why:** The user requested newly added destinations to increase Batch Total and KPIs and display Passed; row confirmation avoids silently inventing a batch-wide quality approval.
 
 **How to apply:** Preserve this distinction when extending destination editing, stock transfers, and quality displays.
+
+Deleting a destination subtracts its quantity from recorded batch production and the applicable shipped/inventory total; it does not move stock elsewhere or reverse an actual shipment.
+
+**Why:** The user explicitly requested row deletion to reduce Batch Total and the main KPI cards.
+
+**How to apply:** Keep removal specific to the selected row, including legacy rows with duplicate names, and confirm its quantity impact before permanent deletion.

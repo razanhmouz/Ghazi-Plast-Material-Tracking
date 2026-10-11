@@ -883,6 +883,60 @@ export const AddDestinationResponse = zod.object({
 })
 
 
+export const deleteDestinationPathIndexMin = 0;
+
+
+
+export const DeleteDestinationParams = zod.object({
+  "id": zod.coerce.string(),
+  "index": zod.coerce.number().int().min(deleteDestinationPathIndexMin)
+})
+
+export const deleteDestinationBodyExpectedQuantityMin = 0;
+
+
+
+export const DeleteDestinationBody = zod.object({
+  "expectedQuantity": zod.number().int().min(deleteDestinationBodyExpectedQuantityMin),
+  "expectedDestinations": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "inspectionResult": zod.enum(['pending', 'passed', 'failed']).optional(),
+  "name": zod.string(),
+  "quantity": zod.number().int(),
+  "type": zod.enum(['shipped', 'inventory'])
+}))
+})
+
+export const deleteDestinationResponseChecklistItemLabelMax = 200;
+
+export const deleteDestinationResponseChecklistItemNotesMax = 2000;
+
+
+
+export const DeleteDestinationResponse = zod.object({
+  "id": zod.string(),
+  "materialId": zod.string(),
+  "quantity": zod.number().int(),
+  "inkLot": zod.string(),
+  "checklist": zod.array(zod.object({
+  "label": zod.string().min(1).max(deleteDestinationResponseChecklistItemLabelMax),
+  "result": zod.enum(['pending', 'passed', 'failed']),
+  "notes": zod.string().max(deleteDestinationResponseChecklistItemNotesMax)
+})),
+  "inspectionResult": zod.enum(['pending', 'passed', 'failed']),
+  "releaseDecision": zod.enum(['pending', 'released', 'hold', 'rejected']),
+  "qualityNotes": zod.string(),
+  "updatedAt": zod.string(),
+  "destinations": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "inspectionResult": zod.enum(['pending', 'passed', 'failed']).optional(),
+  "name": zod.string(),
+  "quantity": zod.number().int(),
+  "type": zod.enum(['shipped', 'inventory'])
+}))
+})
+
+
 /**
  * Returns server health status
  * @summary Health check

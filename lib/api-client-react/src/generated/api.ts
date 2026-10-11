@@ -22,6 +22,7 @@ import type {
 import type {
   AuthUserEnvelope,
   BeginBrowserLoginParams,
+  DestinationDeleteInput,
   DestinationInput,
   EvidenceAccessHistory,
   EvidenceSharingInput,
@@ -2269,6 +2270,91 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getAddDestinationMutationOptions(options));
+    }
+
+export const getDeleteDestinationUrl = (id: string,
+    index: number,) => {
+
+
+
+
+  return `/api/runs/${id}/destinations/${index}`
+}
+
+export const deleteDestination = async (id: string,
+    index: number,
+    destinationDeleteInput: DestinationDeleteInput, options?: Parameters<typeof customFetch>[1]): Promise<Run> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Run>(getDeleteDestinationUrl(id,index),
+  {
+    ...options,
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(destinationDeleteInput)
+  }
+);}
+
+
+
+
+
+export const getDeleteDestinationMutationKey = () => ['deleteDestination'] as const;
+
+export const getDeleteDestinationMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDestination>>, TError,DeleteDestinationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDestination>>, TError,DeleteDestinationMutationVariables, TContext> => {
+
+const mutationKey = getDeleteDestinationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDestination>>, DeleteDestinationMutationVariables> = (props) => {
+          const {id,index,data} = props ?? {};
+
+          return  deleteDestination(id,index,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDestinationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDestination>>>
+    export type DeleteDestinationMutationBody = BodyType<DestinationDeleteInput>
+    export type DeleteDestinationMutationError = ErrorType<void>
+    export type DeleteDestinationMutationVariables = {id: string;index: number;data: BodyType<DestinationDeleteInput>}
+
+    export const useDeleteDestination = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDestination>>, TError,DeleteDestinationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDestination>>,
+        TError,
+        DeleteDestinationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteDestinationMutationOptions(options));
     }
 
 export const getHealthCheckUrl = () => {

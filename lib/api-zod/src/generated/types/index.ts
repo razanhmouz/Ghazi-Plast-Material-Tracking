@@ -12,6 +12,7 @@ export * from './beginBrowserLoginParams';
 export * from './checklistEntry';
 export * from './checklistEntryResult';
 export * from './destination';
+export * from './destinationDeleteInput';
 export * from './destinationInput';
 export * from './destinationInputType';
 export * from './destinationInspectionResult';

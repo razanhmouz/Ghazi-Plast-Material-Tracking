@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, materials, productionRuns } from "@workspace/db";
 import { eq, inArray } from "drizzle-orm";
-import { GetTraceQueryParams, GetTraceResponse, UpdateRunParams, UpdateRunBody, UpdateRunResponse, AddDestinationBody, AddDestinationParams } from "@workspace/api-zod";
+import { GetTraceQueryParams, GetTraceResponse, UpdateRunParams, UpdateRunBody, UpdateRunResponse, AddDestinationBody, AddDestinationParams, DeleteDestinationParams, DeleteDestinationBody } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
@@ -51,6 +51,37 @@ router.post("/runs/:id/destinations", async (req, res): Promise<void> => {
     const [updated] = await tx.update(productionRuns).set({
       quantity: run.quantity + input.quantity,
       destinations: [...run.destinations, { id: input.requestId, name: input.name.trim(), quantity: input.quantity, type: input.type, inspectionResult: "passed" as const }],
+      updatedAt: new Date(),
+    }).where(eq(productionRuns.id, run.id)).returning();
+    return { run: updated };
+  });
+  if (!result.run) { res.status(result.status ?? 400).json({ error: result.error }); return; }
+  res.json(UpdateRunResponse.parse({ ...result.run, updatedAt: result.run.updatedAt.toISOString() }));
+});
+
+router.delete("/runs/:id/destinations/:index", async (req, res): Promise<void> => {
+  const params = DeleteDestinationParams.safeParse(req.params);
+  const body = DeleteDestinationBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Invalid destination deletion." }); return;
+  }
+  const result = await db.transaction(async tx => {
+    const [run] = await tx.select().from(productionRuns).where(eq(productionRuns.id, params.data.id)).for("update");
+    if (!run) return { status: 404, error: "Batch not found." };
+    // Snapshot comparison protects legacy rows without IDs and identical names.
+    const snapshot = (destinations: typeof run.destinations) => JSON.stringify(
+      destinations.map(d => [d.id ?? null, d.name, d.quantity, d.type, d.inspectionResult ?? null]));
+    if (run.quantity !== body.data.expectedQuantity || snapshot(run.destinations) !== snapshot(body.data.expectedDestinations)) {
+      return { status: 409, error: "Destinations changed. Close this dialog and select the destination again after refreshing." };
+    }
+    const destination = run.destinations[params.data.index];
+    if (!destination) return { status: 404, error: "Destination not found." };
+    if (destination.quantity < 0 || destination.quantity > run.quantity) {
+      return { status: 409, error: "The destination quantity does not reconcile with this batch. Correct the batch before deleting." };
+    }
+    const [updated] = await tx.update(productionRuns).set({
+      quantity: run.quantity - destination.quantity,
+      destinations: run.destinations.filter((_, index) => index !== params.data.index),
       updatedAt: new Date(),
     }).where(eq(productionRuns.id, run.id)).returning();
     return { run: updated };

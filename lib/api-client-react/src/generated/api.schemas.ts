@@ -5,6 +5,37 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type DestinationInspectionResult = typeof DestinationInspectionResult[keyof typeof DestinationInspectionResult];
+
+
+export const DestinationInspectionResult = {
+  pending: 'pending',
+  passed: 'passed',
+  failed: 'failed',
+} as const;
+
+export type DestinationType = typeof DestinationType[keyof typeof DestinationType];
+
+
+export const DestinationType = {
+  shipped: 'shipped',
+  inventory: 'inventory',
+} as const;
+
+export interface Destination {
+  id?: string;
+  inspectionResult?: DestinationInspectionResult;
+  name: string;
+  quantity: number;
+  type: DestinationType;
+}
+
+export interface DestinationDeleteInput {
+  /** @minimum 0 */
+  expectedQuantity: number;
+  expectedDestinations: Destination[];
+}
+
 export type PackagingScannerHealthStatus = typeof PackagingScannerHealthStatus[keyof typeof PackagingScannerHealthStatus];
 
 
@@ -447,31 +478,6 @@ export const RunReleaseDecision = {
   hold: 'hold',
   rejected: 'rejected',
 } as const;
-
-export type DestinationInspectionResult = typeof DestinationInspectionResult[keyof typeof DestinationInspectionResult];
-
-
-export const DestinationInspectionResult = {
-  pending: 'pending',
-  passed: 'passed',
-  failed: 'failed',
-} as const;
-
-export type DestinationType = typeof DestinationType[keyof typeof DestinationType];
-
-
-export const DestinationType = {
-  shipped: 'shipped',
-  inventory: 'inventory',
-} as const;
-
-export interface Destination {
-  id?: string;
-  inspectionResult?: DestinationInspectionResult;
-  name: string;
-  quantity: number;
-  type: DestinationType;
-}
 
 export interface Run {
   id: string;

@@ -20,11 +20,11 @@ Staff workflow: Production receives P-77 records and supplier documentation and 
 
 **How to apply:** Treat search and trace as read-only operations, and do not imply the workflow guide verifies document receipt.
 
-Quality Manager final actions are recorded instructions, not physical recall execution or shipment releases. The user subsequently authorized Gmail notifications containing Decision history details for new recall and release decisions.
+Quality Manager final actions are recorded instructions, not physical recall execution or shipment releases. New recall and release decisions trigger email with Decision history details.
 
-**Why:** The user explicitly requested email on new decisions, then expanded the audience to everyone who has signed in, superseding the original no-notification scope without authorizing physical shipment changes.
+**Why:** The user's latest request replaces Gmail sending and the all-users audience with Resend API sending to their own Gmail address. They explicitly selected the Resend test sender.
 
-**How to apply:** Send only for new confirmed decisions to all registered users with valid email addresses, including currently logged-out users. Snapshot the audience when recording and hide recipient addresses from one another. Keep shipment status and quantities unchanged. Sign-in is required to trigger email; manager labeling alone is not a verified role. Do not store recipient addresses in agent memory.
+**How to apply:** Send only for new confirmed decisions to the configured recipient. The test sender can only reach the Resend account email; explain this restriction rather than silently reverting to Gmail or broadcasting. Do not reroute legacy queued notifications through a new provider. Keep shipment status and quantities unchanged. Sign-in is required to trigger email; manager labeling alone is not a verified role. Do not store recipient addresses in agent memory.
 
 The user permits deletion of one selected decision-history record, with confirmation, rather than clearing all history.
 

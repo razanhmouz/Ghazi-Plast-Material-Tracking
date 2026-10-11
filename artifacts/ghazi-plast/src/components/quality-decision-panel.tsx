@@ -52,7 +52,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
       onSuccess: (a) => {
         qc.invalidateQueries({ queryKey: getListQualityActionsQueryKey() });
         invalidateTrace(qc);
-        toast({ title: `${ACT[a.action].verb} recorded`, description: `${a.batchIds.join(", ")} · email ${a.emailStatus === "sent" ? "accepted by Gmail" : "queued"}. See Decision history for sending status.` });
+        toast({ title: `${ACT[a.action].verb} recorded`, description: `${a.batchIds.join(", ")} · email ${a.emailStatus === "sent" ? "accepted by the email service" : a.emailStatus ?? "not requested"}. See Decision history for sending status.` });
         reqRef.current = null;
         setConfirming(false); setAction(null); setSel([]); setRationale("");
       },
@@ -119,10 +119,10 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
             {sel.length > 0 && <span className="font-mono text-xs text-muted-foreground">{sel.length} batch{sel.length > 1 ? "es" : ""} · {fmt(qty)} cups</span>}
           </div>
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-2">
-            {!auth.isAuthenticated ? <><p>Log in to record a decision and send its Gmail notification.</p><Button size="sm" variant="outline" disabled={auth.isLoading} onClick={auth.login}>Log in</Button></>
-              : emailSettings.isError ? <><p role="alert">Notification settings could not be loaded.</p><Button size="sm" variant="outline" onClick={() => void emailSettings.refetch()}>Retry settings</Button></>
+            {!auth.isAuthenticated ? <><p>Log in to record a decision and send its email notification through Resend.</p><Button size="sm" variant="outline" disabled={auth.isLoading} onClick={auth.login}>Log in</Button></>
+              : emailSettings.isError ? <><p role="alert">Notification settings could not be loaded: {errMessage(emailSettings.error)}</p><Button size="sm" variant="outline" onClick={() => void emailSettings.refetch()}>Retry settings</Button></>
               : emailSettings.isLoading ? <p>Loading notification settings…</p>
-              : emailSettings.data?.enabled ? <p>Each confirmed decision emails everyone who has signed in with a valid email address (currently <strong>{emailSettings.data.recipient}</strong>). Recipients are determined when the decision is recorded and their addresses are hidden from one another. Sending status appears in Decision history.</p>
+              : emailSettings.data?.enabled ? <><p>Each confirmed decision emails <strong className="break-all">{emailSettings.data.recipient}</strong> through Resend. Sending status appears in Decision history.</p><p className="text-muted-foreground">Test sender: onboarding@resend.dev. The recipient must be the email registered with Resend. Accepted emails are not proof of inbox delivery.</p></>
               : <p role="alert">Email notifications are not configured. New decisions cannot be recorded yet.</p>}
           </div>
         </div>
@@ -132,7 +132,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{action && ACT[action].label}?</DialogTitle>
-            <DialogDescription>This records the instruction and emails its details to all users who have signed in and have a valid email address, including users who are currently logged out. It does not execute a physical recall, dispatch goods, or change shipment quantities or statuses.</DialogDescription>
+            <DialogDescription>This records the instruction and emails its details to {emailSettings.data?.recipient} using Resend. It does not execute a physical recall, dispatch goods, or change shipment quantities or statuses.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <div className="rounded-lg border divide-y">
@@ -145,7 +145,7 @@ export function QualityDecisionPanel({ runs }: { runs: Run[] }) {
           </div>
           <DialogFooter>
             <Button variant="outline" data-testid="button-confirm-cancel" disabled={record.isPending} onClick={() => setConfirming(false)}>Cancel, change nothing</Button>
-            <Button data-testid="button-confirm-action" disabled={record.isPending || !canReview} onClick={confirm}>{record.isPending ? "Recording…" : "Confirm and record"}</Button>
+            <Button data-testid="button-confirm-action" disabled={record.isPending || !canReview || !auth.isAuthenticated || !emailSettings.data?.enabled} onClick={confirm}>{record.isPending ? "Recording…" : "Record & send email"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -193,10 +193,10 @@ function DecisionHistory({ q }: { q: { data?: QualityAction[]; isLoading: boolea
                   <div className="font-mono text-[10px] text-muted-foreground mt-1">{new Date(a.createdAt).toLocaleString()} · internal instruction, not executed</div>
                   <div className={cn("text-xs mt-2 break-words", a.emailStatus === "sent" ? "text-emerald-400" : a.emailStatus === "failed" || a.emailStatus === "unknown" ? "text-amber-400" : "text-muted-foreground")}>
                     {!a.emailStatus || a.emailStatus === "not_requested" ? "Email not requested · historical decision"
-                      : a.emailStatus === "sent" ? `Email accepted by Gmail · ${a.emailRecipient}${a.emailSentAt ? ` · ${new Date(a.emailSentAt).toLocaleString()}` : ""}`
+                      : a.emailStatus === "sent" ? `Email accepted by the email service · ${a.emailRecipient}${a.emailSentAt ? ` · ${new Date(a.emailSentAt).toLocaleString()}` : ""}`
                       : a.emailStatus === "queued" ? `Email queued · ${a.emailRecipient}`
                       : a.emailStatus === "sending" ? `Sending email · ${a.emailRecipient}`
-                      : `${a.emailStatus === "failed" ? "Email failed" : "Email status uncertain"} · ${a.emailRecipient}. ${a.emailError ?? "Check Gmail before sending again."}`}
+                      : `${a.emailStatus === "failed" ? "Email failed" : "Email status uncertain"} · ${a.emailRecipient}. ${a.emailError ?? "Check the email provider's logs before sending again."}`}
                   </div>
                 </li>
               );

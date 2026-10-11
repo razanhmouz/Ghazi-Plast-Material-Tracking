@@ -4,6 +4,9 @@ import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 export const qualityNotifications = pgTable("quality_notifications", {
   requestId: text("request_id").primaryKey(),
   recipient: text("recipient").notNull(),
+  // Legacy rows remain Gmail records and are never rerouted through Resend.
+  provider: text("provider").notNull().default("gmail"),
+  sender: text("sender").notNull().default(""),
   subject: text("subject").notNull(),
   body: text("body").notNull(),
   status: text("status").notNull().default("queued"),

@@ -47,3 +47,4 @@ packages = ["clamav"]
 
 [userenv.shared]
 QUALITY_NOTIFICATION_RECIPIENT = "hmouzrazan@gmail.com"
+RESEND_FROM_EMAIL = "onboarding@resend.dev"
